@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createStripeCheckout } from '@/lib/stripe'
+import { createStripeCheckout, stripeConfig } from '@/lib/stripe'
 
 export async function POST(request: Request) {
   const form = await request.formData()
@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     plan,
     userId: userId || undefined,
     email: email || undefined,
-  })
+  }).catch(() => `${stripeConfig.siteUrl}/pricing?checkout=configuration-error`)
+
   return NextResponse.redirect(url, 303)
 }

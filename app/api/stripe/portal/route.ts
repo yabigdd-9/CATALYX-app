@@ -18,6 +18,6 @@ export async function POST(request: Request) {
     customerId = data?.stripe_customer_id ?? ''
   }
 
-  const url = await createStripePortal(customerId || undefined)
+  const url = await createStripePortal(customerId || undefined).catch(() => `${stripeConfig.siteUrl}/profile?portal=configuration-error`)
   return NextResponse.redirect(url || `${stripeConfig.siteUrl}/profile?mockPortal=1`, 303)
 }

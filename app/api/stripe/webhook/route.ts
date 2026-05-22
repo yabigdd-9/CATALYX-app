@@ -8,6 +8,13 @@ export async function POST(request: Request) {
   let event: { type: string; data: { object: Record<string, unknown> } }
 
   try {
+    if (stripeConfig.isProduction && (!stripe || !stripeConfig.webhookSecret || !signature)) {
+      return NextResponse.json(
+        { received: false, error: 'Stripe webhook signature verification is not configured.' },
+        { status: 400 }
+      )
+    }
+
     if (stripe && stripeConfig.webhookSecret && signature) {
       event = stripe.webhooks.constructEvent(rawBody, signature, stripeConfig.webhookSecret) as unknown as typeof event
     } else {
@@ -80,4 +87,3 @@ async function persistSubscriptionEvent(type: string, object: Record<string, unk
     })
   }
 }
-

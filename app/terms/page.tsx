@@ -8,6 +8,14 @@ export const metadata: Metadata = {
 
 const sections = [
   {
+    title: 'Subscriptions and Billing',
+    body: 'Professional features may require a paid subscription. Subscription billing is handled through Stripe. Prices, billing intervals, included features, and renewal terms are shown before checkout.',
+  },
+  {
+    title: 'Cancellation',
+    body: 'You may cancel a subscription through the billing portal or by contacting support. Access to paid features may continue until the end of the current paid billing period unless otherwise required by law.',
+  },
+  {
     title: 'Use of This Website',
     body: 'By using the Catalyx Labs website, you agree to use it only for lawful purposes and in a way that does not interfere with the experience, security, or availability of the site for other customers.',
   },
@@ -25,7 +33,11 @@ const sections = [
   },
   {
     title: 'Returns and Support',
-    body: 'If you have an issue with an order or product, contact Catalyx Labs support with your order details. Return eligibility may depend on product condition, timing, and applicable consumer law.',
+    body: 'If you have an issue with an order, subscription, or product, contact Catalyx Labs support with your order details. Return or refund eligibility may depend on product condition, timing, subscription usage, and applicable consumer law.',
+  },
+  {
+    title: 'Grow Guidance',
+    body: 'Grow OS recommendations, calculators, and educational content are informational tools only. You remain responsible for crop decisions, local compliance, product handling, and verifying that any recommendation is suitable for your system.',
   },
   {
     title: 'Limitation of Liability',
@@ -49,6 +61,7 @@ export default function TermsPage() {
           <p className="mt-5 max-w-3xl text-zinc-400">
             These terms outline the basic conditions for using this website and purchasing Catalyx Labs products.
           </p>
+          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-zinc-600">Last updated: May 22, 2026</p>
         </div>
       </section>
 

@@ -6,6 +6,7 @@ export const stripeConfig = {
   monthlyPriceId: process.env.STRIPE_PRICE_PRO_MONTHLY,
   yearlyPriceId: process.env.STRIPE_PRICE_PRO_YEARLY,
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  isProduction: process.env.NODE_ENV === 'production',
 }
 
 export const stripe = stripeConfig.secretKey
@@ -14,7 +15,12 @@ export const stripe = stripeConfig.secretKey
     })
   : null
 
-export const hasStripe = Boolean(stripe && stripeConfig.monthlyPriceId && stripeConfig.yearlyPriceId)
+export const hasStripeCheckout = Boolean(stripe && stripeConfig.monthlyPriceId && stripeConfig.yearlyPriceId)
+export const hasStripeWebhook = Boolean(stripe && stripeConfig.webhookSecret)
+
+function stripeSetupError() {
+  return new Error('Stripe checkout is not configured. Set STRIPE_SECRET_KEY, STRIPE_PRICE_PRO_MONTHLY, and STRIPE_PRICE_PRO_YEARLY.')
+}
 
 export async function createStripeCheckout({
   plan,
@@ -25,7 +31,8 @@ export async function createStripeCheckout({
   userId?: string
   email?: string
 }) {
-  if (!hasStripe || !stripe) {
+  if (!hasStripeCheckout || !stripe) {
+    if (stripeConfig.isProduction) throw stripeSetupError()
     return `${stripeConfig.siteUrl}/pricing?mockCheckout=1&plan=${plan}`
   }
 
@@ -55,6 +62,7 @@ export async function createStripeCheckout({
 
 export async function createStripePortal(customerId?: string) {
   if (!stripe || !customerId) {
+    if (stripeConfig.isProduction) throw stripeSetupError()
     return `${stripeConfig.siteUrl}/profile?mockPortal=1`
   }
 
@@ -65,4 +73,3 @@ export async function createStripePortal(customerId?: string) {
 
   return session.url
 }
-

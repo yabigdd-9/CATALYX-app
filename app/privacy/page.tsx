@@ -8,6 +8,14 @@ export const metadata: Metadata = {
 
 const sections = [
   {
+    title: 'Account and Grow Data',
+    body: 'If you create an account or use Grow OS tools, we may store profile details, saved grow settings, feed logs, subscription status, and support messages so the app can provide the requested features.',
+  },
+  {
+    title: 'Payments',
+    body: 'Payments and subscription billing are processed by Stripe. Catalyx Labs does not store full card numbers. Stripe may process payment details, billing address, and transaction metadata under its own privacy terms.',
+  },
+  {
     title: 'Information We Collect',
     body: 'We may collect contact details, order information, messages you send us, and basic website usage data needed to operate the site and support customers.',
   },
@@ -21,7 +29,7 @@ const sections = [
   },
   {
     title: 'Data Security',
-    body: 'We use reasonable safeguards to protect customer information, but no online service can guarantee absolute security.',
+    body: 'We use reasonable safeguards and trusted service providers to protect customer information, but no online service can guarantee absolute security.',
   },
   {
     title: 'Your Choices',
@@ -45,6 +53,7 @@ export default function PrivacyPage() {
           <p className="mt-5 max-w-3xl text-zinc-400">
             This policy explains how Catalyx Labs handles basic website and customer information.
           </p>
+          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-zinc-600">Last updated: May 22, 2026</p>
         </div>
       </section>
 

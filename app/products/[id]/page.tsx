@@ -6,23 +6,25 @@ import AddToShelfButton from '@/components/AddToShelfButton'
 import ProductVisual from '@/components/ProductVisual'
 
 interface ProductPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export function generateStaticParams() {
   return products.map((product) => ({ id: product.id }))
 }
 
-export function generateMetadata({ params }: ProductPageProps) {
-  const product = products.find((item) => item.id === params.id)
+export async function generateMetadata({ params }: ProductPageProps) {
+  const { id } = await params
+  const product = products.find((item) => item.id === id)
   return {
     title: product ? `${product.name} | Catalyx Labs` : 'Product Not Found | Catalyx Labs',
     description: product?.why ?? 'Catalyx Labs product education.',
   }
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = products.find((item) => item.id === params.id)
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params
+  const product = products.find((item) => item.id === id)
   if (!product) notFound()
 
   const related = products.filter((item) => item.id !== product.id && item.stages.some((stage) => product.stages.includes(stage))).slice(0, 3)
