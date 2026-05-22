@@ -1,0 +1,46 @@
+{
+  "name": "catalyx-labs-grow-os",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:web": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "hint:styles": "hint http://127.0.0.1:3013 --config .hintrc",
+    "typecheck": "tsc --noEmit",
+    "cap:init": "npx cap init \"Catalyx Labs Grow OS\" catalyx --web-dir=out --npm-client=npm",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:copy": "npx cap copy",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:build": "npm run build:web && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.1",
+    "@supabase/supabase-js": "^2.105.4",
+    "next": "^16.2.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "stripe": "^22.1.1",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/ios": "^6.2.1",
+    "@hint/hint-no-inline-styles": "^1.0.9",
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "Catalyx Labs",
+  "short_name": "Catalyx",
+  "description": "Precision cultivation made simple.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "background_color": "#050707",
+  "theme_color": "#c8f500",
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities", "education"],
+  "icons": [
+    { "src": "/brand/official/logo-app-icon-official.png", "sizes": "200x200", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open the Catalyx cultivation dashboard.",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Feed Log",
+      "short_name": "Feed",
+      "description": "Record a fast feed log.",
+      "url": "/feed-log"
+    },
+    {
+      "name": "Calculator",
+      "short_name": "Dose",
+      "description": "Open the Catalyx feed calculator.",
+      "url": "/feed-calculator"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+import Stripe from 'stripe'
+
+export const stripeConfig = {
+  secretKey: process.env.STRIPE_SECRET_KEY,
+  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  monthlyPriceId: process.env.STRIPE_PRICE_PRO_MONTHLY,
+  yearlyPriceId: process.env.STRIPE_PRICE_PRO_YEARLY,
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+}
+
+export const stripe = stripeConfig.secretKey
+  ? new Stripe(stripeConfig.secretKey, {
+      apiVersion: '2026-04-22.dahlia',
+    })
+  : null
+
+export const hasStripe = Boolean(stripe && stripeConfig.monthlyPriceId && stripeConfig.yearlyPriceId)
+
+export async function createStripeCheckout({
+  plan,
+  userId,
+  email,
+}: {
+  plan: 'monthly' | 'yearly'
+  userId?: string
+  email?: string
+}) {
+  if (!hasStripe || !stripe) {
+    return `${stripeConfig.siteUrl}/pricing?mockCheckout=1&plan=${plan}`
+  }
+
+  const price = plan === 'yearly' ? stripeConfig.yearlyPriceId : stripeConfig.monthlyPriceId
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    line_items: [{ price, quantity: 1 }],
+    customer_email: email,
+    allow_promotion_codes: true,
+    client_reference_id: userId,
+    metadata: {
+      user_id: userId ?? '',
+      plan,
+    },
+    subscription_data: {
+      metadata: {
+        user_id: userId ?? '',
+        plan,
+      },
+    },
+    success_url: `${stripeConfig.siteUrl}/dashboard?checkout=success`,
+    cancel_url: `${stripeConfig.siteUrl}/pricing?checkout=cancelled`,
+  })
+
+  return session.url ?? `${stripeConfig.siteUrl}/pricing?mockCheckout=1`
+}
+
+export async function createStripePortal(customerId?: string) {
+  if (!stripe || !customerId) {
+    return `${stripeConfig.siteUrl}/profile?mockPortal=1`
+  }
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: `${stripeConfig.siteUrl}/profile`,
+  })
+
+  return session.url
+}
+
