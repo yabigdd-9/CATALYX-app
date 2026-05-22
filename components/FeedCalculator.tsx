@@ -12,9 +12,10 @@ import {
   type RunoffTrend,
   type Stage,
   type StressLevel,
+  type TrackedGrow,
 } from '@/lib/catalyx'
-import { Panel, ProductAccent, StatusPill } from '@/components/catalyx-ui'
-import { readLocalObject, storageKeys } from '@/lib/persistence'
+import { Panel, ProductAccent, SaveBanner, StatusPill } from '@/components/catalyx-ui'
+import { readLocalList, readLocalObject, storageKeys, writeLocalList } from '@/lib/persistence'
 
 const stages = Object.keys(stageLabels) as Stage[]
 const experiences: Experience[] = ['beginner', 'standard', 'professional']
@@ -22,21 +23,69 @@ const mediums: Medium[] = ['hydro', 'coco', 'soil']
 const runoffTrends: RunoffTrend[] = ['stable', 'rising', 'falling']
 const stressLevels: StressLevel[] = ['low', 'moderate', 'high']
 
+type SavedFeedLog = {
+  date: string
+  litres: number
+  ec: number
+  ph: number
+  runoffEc: number
+  runoffPh: number
+  response: string
+}
+
 export default function FeedCalculator() {
   const [savedSetup] = useState(() => readLocalObject(storageKeys.onboarding, defaultOnboardingSetup))
-  const [stage, setStage] = useState<Stage>(savedSetup.stage)
+  const [activeSavedGrow] = useState<TrackedGrow | null>(() => readLocalList<TrackedGrow>(storageKeys.grows)[0] ?? null)
+  const [stage, setStage] = useState<Stage>(activeSavedGrow?.stage ?? savedSetup.stage)
   const [litres, setLitres] = useState(20)
   const [experience, setExperience] = useState<Experience>(savedSetup.experience)
-  const [medium, setMedium] = useState<Medium>(savedSetup.medium)
-  const [mode, setMode] = useState<GrowMode>(savedSetup.mode)
+  const [medium, setMedium] = useState<Medium>(activeSavedGrow?.medium ?? savedSetup.medium)
+  const [mode, setMode] = useState<GrowMode>(activeSavedGrow?.goal ?? savedSetup.mode)
   const [runoffTrend, setRunoffTrend] = useState<RunoffTrend>('stable')
   const [stressLevel, setStressLevel] = useState<StressLevel>('low')
+  const [savedLogs, setSavedLogs] = useState<SavedFeedLog[]>(() => readLocalList<SavedFeedLog>(storageKeys.feedLogs))
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveMessage, setSaveMessage] = useState<string | undefined>()
 
   const plan = useMemo(
     () => calculateAdaptiveFeed({ stage, litres, experience, mode, medium, runoffTrend, stressLevel }),
     [experience, litres, medium, mode, runoffTrend, stage, stressLevel],
   )
   const aggressive = plan.adjustmentPercent > 5 || plan.warnings.length > 0
+  const targetEc = Number(((plan.targetEc[0] + plan.targetEc[1]) / 2).toFixed(1))
+  const targetPh = Number(((plan.targetPh[0] + plan.targetPh[1]) / 2).toFixed(1))
+
+  function saveFeedPlan() {
+    setSaveStatus('saving')
+    const productList = plan.items.map((item) => `${item.product.name} ${item.totalMl} ml`).join(', ')
+    const plannedFeed: SavedFeedLog = {
+      date: new Date().toLocaleDateString(),
+      litres,
+      ec: targetEc,
+      ph: targetPh,
+      runoffEc: targetEc,
+      runoffPh: targetPh,
+      response: `Planned ${stageLabels[stage]} feed: ${productList}`,
+    }
+    const nextLogs = [plannedFeed, ...savedLogs].slice(0, 12)
+    writeLocalList(storageKeys.feedLogs, nextLogs)
+    setSavedLogs(nextLogs)
+    setSaveStatus('saved')
+    setSaveMessage('Planned feed saved locally. Dashboard confidence and runoff trend can now use it.')
+  }
+
+  function repeatPreviousFeed() {
+    const previous = savedLogs[0]
+    if (!previous) {
+      setSaveStatus('error')
+      setSaveMessage('No saved feed is available to repeat yet.')
+      return
+    }
+
+    setLitres(previous.litres)
+    setSaveStatus('saved')
+    setSaveMessage(`Loaded previous feed from ${previous.date}.`)
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -111,9 +160,10 @@ export default function FeedCalculator() {
             </label>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button className="rounded-md bg-[#c8f500] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-black">Save feed to journal</button>
-            <button className="rounded-md border border-white/15 px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Repeat previous feed</button>
+            <button onClick={saveFeedPlan} className="rounded-md bg-[#c8f500] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-black">Save feed to journal</button>
+            <button onClick={repeatPreviousFeed} className="rounded-md border border-white/15 px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Repeat previous feed</button>
           </div>
+          <SaveBanner status={saveStatus} message={saveMessage} />
         </div>
       </Panel>
 
@@ -153,6 +203,12 @@ export default function FeedCalculator() {
         <div className="mt-5 rounded-md border border-[#33d9ff]/30 bg-[#33d9ff]/10 p-4 text-sm leading-6 text-zinc-300">
           {plan.warnings[0] ?? plan.instructions.join(' ')}
         </div>
+        {savedLogs.length ? (
+          <div className="mt-5 rounded-md border border-white/10 bg-black/30 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Latest saved feed</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-300">{savedLogs[0].date}: {savedLogs[0].litres} L / EC {savedLogs[0].ec} / pH {savedLogs[0].ph}</p>
+          </div>
+        ) : null}
       </Panel>
     </div>
   )

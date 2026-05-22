@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { activeGrow, defaultOnboardingSetup, mediumLabels, productsForStage, recommendationEngine, reminders, scoreBreakdown, stageLabels, type OnboardingSetup } from '@/lib/catalyx'
+import { activeGrow, defaultOnboardingSetup, mediumLabels, productsForStage, recommendationEngine, reminders, scoreBreakdown, stageLabels, type OnboardingSetup, type TrackedGrow } from '@/lib/catalyx'
 import { MetricCard, MiniGraph, PageHeader, Panel, PrimaryActionPanel, ProductAccent, RecommendationCard, ShellSection, StatusPill } from '@/components/catalyx-ui'
 import { readLocalList, readLocalObject, storageKeys } from '@/lib/persistence'
 import { loadFeedLogsFromSupabase } from '@/lib/supabase-services'
@@ -21,6 +21,7 @@ type LocalFeedLog = {
 export default function DashboardPage() {
   const [savedLogs, setSavedLogs] = useState<LocalFeedLog[]>(() => readLocalList<LocalFeedLog>(storageKeys.feedLogs))
   const [setup] = useState<OnboardingSetup>(() => readLocalObject<OnboardingSetup>(storageKeys.onboarding, defaultOnboardingSetup))
+  const [savedGrows] = useState<TrackedGrow[]>(() => readLocalList<TrackedGrow>(storageKeys.grows))
 
   useEffect(() => {
     loadFeedLogsFromSupabase()
@@ -40,21 +41,23 @@ export default function DashboardPage() {
     return 'stable'
   }, [savedLogs])
 
-  const recommendations = recommendationEngine({
-    stage: setup.stage,
-    medium: setup.medium,
-    experience: setup.experience,
-    mode: setup.mode,
-    runoffTrend,
-  })
-  const currentGrow = {
+  const currentGrow = savedGrows[0] ?? {
     ...activeGrow,
     stage: setup.stage,
     medium: setup.medium,
     goal: setup.mode,
     feedingStyle: `${setup.feedingStyle} / ${setup.delivery}`,
+    environmentNotes: setup.environment,
+    createdAt: setup.configuredAt ?? activeGrow.startDate,
     notes: `Environment difficulty: ${setup.environment}. Recommendations are using saved onboarding settings.`,
   }
+  const recommendations = recommendationEngine({
+    stage: currentGrow.stage,
+    medium: currentGrow.medium,
+    experience: setup.experience,
+    mode: currentGrow.goal,
+    runoffTrend,
+  })
   const topRecommendation = recommendations[1]
   const primaryTitle = runoffTrend === 'rising' ? "Hold feed strength and log runoff after tonight's feed." : runoffTrend === 'stable' ? 'Maintain feed strength and keep the routine consistent.' : 'Runoff is easing. Maintain the recovery trend.'
   const primaryBody = runoffTrend === 'rising'
@@ -124,7 +127,7 @@ export default function DashboardPage() {
             <div className="rounded-md border border-white/10 bg-black/30 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Saved setup</p>
               <MiniGraph color="#c8f500" />
-              <p className="mt-3 text-sm text-zinc-400">{setup.mode} using {setup.feedingStyle} feeding in {setup.environment} conditions.</p>
+              <p className="mt-3 text-sm text-zinc-400">{currentGrow.goal} using {currentGrow.feedingStyle} in {currentGrow.environmentNotes} conditions.</p>
             </div>
           </div>
         </Panel>

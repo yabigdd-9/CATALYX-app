@@ -23,6 +23,22 @@ export type OnboardingSetup = {
   configuredAt?: string
 }
 
+export type TrackedGrow = {
+  id: string
+  name: string
+  strain: string
+  startDate: string
+  stage: Stage
+  medium: Medium
+  lightSchedule: string
+  goal: GrowMode
+  feedingStyle: string
+  environmentNotes: string
+  healthStatus: string
+  notes: string
+  createdAt: string
+}
+
 export type ProductKey =
   | 'ax-pro'
   | 'bx-pro'

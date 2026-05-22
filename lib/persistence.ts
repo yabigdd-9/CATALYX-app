@@ -75,8 +75,8 @@ export async function persistRecord<T extends Record<string, unknown>>({
 
 export const storageKeys = {
   onboarding: 'catalyx-onboarding',
+  grows: 'catalyx-grows',
   feedLogs: 'catalyx-feed-logs',
   reminders: 'catalyx-reminders',
   shelf: 'catalyx-shelf',
 }
-
