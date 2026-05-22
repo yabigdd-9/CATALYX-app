@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import PwaRegister from '../components/PwaRegister'
 import { AuthProvider } from '../components/AuthProvider'
+import AIGrowTipWidget from '../components/AIGrowTipWidget'
 
 export const metadata: Metadata = {
   title: 'Catalyx Labs | Precision Cultivation OS',
@@ -48,6 +49,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <AIGrowTipWidget />
         </AuthProvider>
       </body>
     </html>
