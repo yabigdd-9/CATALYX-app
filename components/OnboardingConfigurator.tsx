@@ -1,26 +1,28 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { modes, productsForStage, stageLabels, type Experience, type GrowMode, type Medium, type Stage } from '@/lib/catalyx'
+import { defaultOnboardingSetup, modes, productsForStage, stageLabels, type Experience, type GrowMode, type Medium, type OnboardingSetup, type Stage } from '@/lib/catalyx'
 import { Panel, ProductAccent, SaveBanner, StatusPill } from '@/components/catalyx-ui'
-import { storageKeys, writeLocalObject } from '@/lib/persistence'
+import { readLocalObject, storageKeys, writeLocalObject } from '@/lib/persistence'
 import { saveOnboardingToSupabase } from '@/lib/supabase-services'
 
 export default function OnboardingConfigurator() {
-  const [medium, setMedium] = useState<Medium>('coco')
-  const [experience, setExperience] = useState<Experience>('beginner')
-  const [stage, setStage] = useState<Stage>('vegetative')
-  const [feedingStyle, setFeedingStyle] = useState('safe')
-  const [delivery, setDelivery] = useState('hand-water')
-  const [environment, setEnvironment] = useState('moderate')
-  const [mode, setMode] = useState<GrowMode>('Beginner Mode')
+  const [savedSetup] = useState<OnboardingSetup>(() => readLocalObject<OnboardingSetup>(storageKeys.onboarding, defaultOnboardingSetup))
+  const [medium, setMedium] = useState<Medium>(savedSetup.medium)
+  const [experience, setExperience] = useState<Experience>(savedSetup.experience)
+  const [stage, setStage] = useState<Stage>(savedSetup.stage)
+  const [feedingStyle, setFeedingStyle] = useState<OnboardingSetup['feedingStyle']>(savedSetup.feedingStyle)
+  const [delivery, setDelivery] = useState<OnboardingSetup['delivery']>(savedSetup.delivery)
+  const [environment, setEnvironment] = useState<OnboardingSetup['environment']>(savedSetup.environment)
+  const [mode, setMode] = useState<GrowMode>(savedSetup.mode)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const recommended = useMemo(() => productsForStage(stage), [stage])
   const readiness = experience === 'professional' ? 92 : feedingStyle === 'aggressive' ? 74 : 86
 
   async function saveSetup() {
     setSaveStatus('saving')
-    const payload = {
+    const payload: OnboardingSetup = {
       medium,
       experience,
       stage,
@@ -132,15 +134,15 @@ export default function OnboardingConfigurator() {
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <button onClick={saveSetup} className="rounded-md bg-[#c8f500] px-4 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-black">Save setup</button>
-          <a href="/products" className="rounded-md border border-white/15 px-4 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-white">Review products</a>
+          <Link href="/products" className="rounded-md border border-white/15 px-4 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-white">Review products</Link>
         </div>
         <div className="mt-3">
           <SaveBanner status={saveStatus} message={saveStatus === 'saved' ? 'Onboarding saved locally. Supabase sync is ready when keys are configured.' : undefined} />
         </div>
         {saveStatus === 'saved' ? (
-          <a href="/dashboard" className="mt-3 inline-flex w-full justify-center rounded-md border border-[#c8f500]/30 bg-[#c8f500]/10 px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d9ff34]">
+          <Link href="/dashboard" className="mt-3 inline-flex w-full justify-center rounded-md border border-[#c8f500]/30 bg-[#c8f500]/10 px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d9ff34]">
             Open dashboard
-          </a>
+          </Link>
         ) : null}
       </Panel>
     </div>

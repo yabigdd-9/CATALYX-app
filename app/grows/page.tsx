@@ -1,7 +1,21 @@
-import { activeGrow, stageLabels } from '@/lib/catalyx'
+'use client'
+
+import { useState } from 'react'
+import { activeGrow, defaultOnboardingSetup, mediumLabels, stageLabels, type OnboardingSetup } from '@/lib/catalyx'
 import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
+import { readLocalObject, storageKeys } from '@/lib/persistence'
 
 export default function GrowsPage() {
+  const [setup] = useState<OnboardingSetup>(() => readLocalObject<OnboardingSetup>(storageKeys.onboarding, defaultOnboardingSetup))
+  const currentGrow = {
+    ...activeGrow,
+    stage: setup.stage,
+    medium: setup.medium,
+    goal: setup.mode,
+    feedingStyle: `${setup.feedingStyle} / ${setup.delivery}`,
+    notes: `Saved onboarding profile. Environment difficulty: ${setup.environment}.`,
+  }
+
   return (
     <ShellSection>
       <PageHeader title="Grow tracker" copy="Track grows, plants, tents, rooms, stages, mediums, light schedules, goals, feeding style, environment notes, health status, and journal notes." />
@@ -22,13 +36,13 @@ export default function GrowsPage() {
           <div className="flex flex-wrap justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Active grow</p>
-              <h2 className="mt-2 text-3xl font-black">{activeGrow.name}</h2>
-              <p className="mt-2 text-zinc-400">{activeGrow.strain}</p>
+              <h2 className="mt-2 text-3xl font-black">{currentGrow.name}</h2>
+              <p className="mt-2 text-zinc-400">{currentGrow.strain} / {mediumLabels[currentGrow.medium]}</p>
             </div>
-            <StatusPill tone="lime">{stageLabels[activeGrow.stage]}</StatusPill>
+            <StatusPill tone="lime">{stageLabels[currentGrow.stage]}</StatusPill>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            {Object.entries(activeGrow).filter(([key]) => !['id', 'name'].includes(key)).map(([key, value]) => (
+            {Object.entries(currentGrow).filter(([key]) => !['id', 'name'].includes(key)).map(([key, value]) => (
               <div key={key} className="rounded-md border border-white/10 bg-black/30 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{key.replace(/([A-Z])/g, ' $1')}</p>
                 <p className="mt-2 font-bold text-white">{String(value)}</p>
@@ -40,4 +54,3 @@ export default function GrowsPage() {
     </ShellSection>
   )
 }
-

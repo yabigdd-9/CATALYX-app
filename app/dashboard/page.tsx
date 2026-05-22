@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { activeGrow, productsForStage, recommendationEngine, reminders, scoreBreakdown } from '@/lib/catalyx'
+import { activeGrow, defaultOnboardingSetup, mediumLabels, productsForStage, recommendationEngine, reminders, scoreBreakdown, stageLabels, type OnboardingSetup } from '@/lib/catalyx'
 import { MetricCard, MiniGraph, PageHeader, Panel, PrimaryActionPanel, ProductAccent, RecommendationCard, ShellSection, StatusPill } from '@/components/catalyx-ui'
-import { readLocalList, storageKeys } from '@/lib/persistence'
+import { readLocalList, readLocalObject, storageKeys } from '@/lib/persistence'
 import { loadFeedLogsFromSupabase } from '@/lib/supabase-services'
 import SubscriptionPanel from '@/components/SubscriptionPanel'
 
@@ -19,10 +19,10 @@ type LocalFeedLog = {
 }
 
 export default function DashboardPage() {
-  const [savedLogs, setSavedLogs] = useState<LocalFeedLog[]>([])
+  const [savedLogs, setSavedLogs] = useState<LocalFeedLog[]>(() => readLocalList<LocalFeedLog>(storageKeys.feedLogs))
+  const [setup] = useState<OnboardingSetup>(() => readLocalObject<OnboardingSetup>(storageKeys.onboarding, defaultOnboardingSetup))
 
   useEffect(() => {
-    setSavedLogs(readLocalList<LocalFeedLog>(storageKeys.feedLogs))
     loadFeedLogsFromSupabase()
       .then((logs) => {
         if (logs.length) setSavedLogs(logs)
@@ -40,7 +40,21 @@ export default function DashboardPage() {
     return 'stable'
   }, [savedLogs])
 
-  const recommendations = recommendationEngine({ runoffTrend })
+  const recommendations = recommendationEngine({
+    stage: setup.stage,
+    medium: setup.medium,
+    experience: setup.experience,
+    mode: setup.mode,
+    runoffTrend,
+  })
+  const currentGrow = {
+    ...activeGrow,
+    stage: setup.stage,
+    medium: setup.medium,
+    goal: setup.mode,
+    feedingStyle: `${setup.feedingStyle} / ${setup.delivery}`,
+    notes: `Environment difficulty: ${setup.environment}. Recommendations are using saved onboarding settings.`,
+  }
   const topRecommendation = recommendations[1]
   const primaryTitle = runoffTrend === 'rising' ? "Hold feed strength and log runoff after tonight's feed." : runoffTrend === 'stable' ? 'Maintain feed strength and keep the routine consistent.' : 'Runoff is easing. Maintain the recovery trend.'
   const primaryBody = runoffTrend === 'rising'
@@ -93,24 +107,24 @@ export default function DashboardPage() {
           <div className="flex flex-wrap justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Active grow</p>
-              <h2 className="mt-2 text-3xl font-black">{activeGrow.name}</h2>
-              <p className="mt-2 text-zinc-400">{activeGrow.strain} / {activeGrow.medium} / {activeGrow.lightSchedule}</p>
+              <h2 className="mt-2 text-3xl font-black">{currentGrow.name}</h2>
+              <p className="mt-2 text-zinc-400">{currentGrow.strain} / {mediumLabels[currentGrow.medium]} / {currentGrow.lightSchedule}</p>
             </div>
-            <StatusPill tone="blue">{activeGrow.healthStatus}</StatusPill>
+            <StatusPill tone="blue">{stageLabels[currentGrow.stage]}</StatusPill>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="rounded-md border border-white/10 bg-black/30 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Next feed</p>
               <div className="mt-3 grid gap-2">
-                {productsForStage(activeGrow.stage).map((product) => (
+                {productsForStage(currentGrow.stage).map((product) => (
                   <ProductAccent key={product.id} product={product} compact />
                 ))}
               </div>
             </div>
             <div className="rounded-md border border-white/10 bg-black/30 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Weekly progress snapshot</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Saved setup</p>
               <MiniGraph color="#c8f500" />
-              <p className="mt-3 text-sm text-zinc-400">Photo progression and growth momentum are both above last week.</p>
+              <p className="mt-3 text-sm text-zinc-400">{setup.mode} using {setup.feedingStyle} feeding in {setup.environment} conditions.</p>
             </div>
           </div>
         </Panel>

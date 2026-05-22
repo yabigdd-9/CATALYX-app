@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import {
   calculateAdaptiveFeed,
+  defaultOnboardingSetup,
   modes,
   stageLabels,
   type Experience,
@@ -13,6 +14,7 @@ import {
   type StressLevel,
 } from '@/lib/catalyx'
 import { Panel, ProductAccent, StatusPill } from '@/components/catalyx-ui'
+import { readLocalObject, storageKeys } from '@/lib/persistence'
 
 const stages = Object.keys(stageLabels) as Stage[]
 const experiences: Experience[] = ['beginner', 'standard', 'professional']
@@ -21,11 +23,12 @@ const runoffTrends: RunoffTrend[] = ['stable', 'rising', 'falling']
 const stressLevels: StressLevel[] = ['low', 'moderate', 'high']
 
 export default function FeedCalculator() {
-  const [stage, setStage] = useState<Stage>('mid-flower')
+  const [savedSetup] = useState(() => readLocalObject(storageKeys.onboarding, defaultOnboardingSetup))
+  const [stage, setStage] = useState<Stage>(savedSetup.stage)
   const [litres, setLitres] = useState(20)
-  const [experience, setExperience] = useState<Experience>('standard')
-  const [medium, setMedium] = useState<Medium>('coco')
-  const [mode, setMode] = useState<GrowMode>('Quality Mode')
+  const [experience, setExperience] = useState<Experience>(savedSetup.experience)
+  const [medium, setMedium] = useState<Medium>(savedSetup.medium)
+  const [mode, setMode] = useState<GrowMode>(savedSetup.mode)
   const [runoffTrend, setRunoffTrend] = useState<RunoffTrend>('stable')
   const [stressLevel, setStressLevel] = useState<StressLevel>('low')
 

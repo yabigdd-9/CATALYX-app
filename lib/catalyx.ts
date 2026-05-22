@@ -12,6 +12,17 @@ export type GrowMode =
   | 'Low Maintenance Mode'
   | 'Recovery Mode'
 
+export type OnboardingSetup = {
+  medium: Medium
+  experience: Experience
+  stage: Stage
+  feedingStyle: 'safe' | 'standard' | 'aggressive'
+  delivery: 'hand-water' | 'automated'
+  environment: 'easy' | 'moderate' | 'difficult'
+  mode: GrowMode
+  configuredAt?: string
+}
+
 export type ProductKey =
   | 'ax-pro'
   | 'bx-pro'
@@ -291,6 +302,16 @@ export const modes: GrowMode[] = [
   'Low Maintenance Mode',
   'Recovery Mode',
 ]
+
+export const defaultOnboardingSetup: OnboardingSetup = {
+  medium: 'coco',
+  experience: 'beginner',
+  stage: 'vegetative',
+  feedingStyle: 'safe',
+  delivery: 'hand-water',
+  environment: 'moderate',
+  mode: 'Beginner Mode',
+}
 
 export const mockProfile = {
   name: 'Mara Chen',

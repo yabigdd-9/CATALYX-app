@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCart } from '@/lib/store'
 import { getProductById } from '@/lib/products'
 
@@ -13,12 +14,12 @@ export default function CartPage() {
       {items.length === 0 ? (
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
           <p className="text-gray-600 text-lg mb-4">Your cart is empty</p>
-          <a
+          <Link
             href="/products"
             className="inline-block bg-catalyx-purple text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition"
           >
             Continue Shopping
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
