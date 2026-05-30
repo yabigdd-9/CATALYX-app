@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CATALYX Labs Grow OS</title>
+    <meta name="description" content="CATALYX Labs Grow OS — nutrient planning, feed guidance, and grow tracking." />
+    <style>
+      :root {
+        --bg: #050505;
+        --panel: #101010;
+        --text: #f5f5f5;
+        --muted: #a5a5a5;
+        --green: #7cff00;
+        --lime: #a6ff00;
+        --cyan: #00cfff;
+        --orange: #ff8a00;
+        --red: #ff1a1a;
+        --blue: #0033cc;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(124,255,0,.18), transparent 32rem),
+          radial-gradient(circle at bottom right, rgba(0,207,255,.12), transparent 30rem),
+          var(--bg);
+      }
+      main { max-width: 1120px; margin: 0 auto; padding: 56px 22px; }
+      .hero {
+        display: grid;
+        gap: 28px;
+        padding: 42px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(10,10,10,.72);
+        border-radius: 28px;
+        box-shadow: 0 24px 80px rgba(0,0,0,.45);
+        backdrop-filter: blur(14px);
+      }
+      .eyebrow { color: var(--green); letter-spacing: .18em; font-weight: 800; font-size: 12px; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(42px, 7vw, 86px); line-height: .9; letter-spacing: -.06em; }
+      p { color: var(--muted); font-size: 18px; line-height: 1.65; max-width: 760px; }
+      .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        text-decoration: none;
+        color: #050505;
+        background: linear-gradient(135deg, var(--green), var(--lime));
+      }
+      .button.secondary { color: var(--text); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 24px; }
+      .card { padding: 20px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 22px; }
+      .card h2 { margin: 0 0 8px; font-size: 18px; }
+      .card p { margin: 0; font-size: 14px; }
+      .products { margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+      .product { padding: 14px; border-radius: 16px; background: #0c0c0c; border: 1px solid rgba(255,255,255,.1); font-weight: 800; }
+      .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; margin-right: 8px; vertical-align: middle; }
+      footer { margin-top: 36px; color: #777; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">CATALYX Labs · Grow OS</div>
+        <h1>Precision grow tools for the CATALYX nutrient system.</h1>
+        <p>
+          A clean starting point for the CATALYX Labs Grow OS — built to support feed planning,
+          product education, grow tracking, and future Supabase-powered grow dashboards.
+        </p>
+        <div class="actions">
+          <a class="button" href="#products">View product system</a>
+          <a class="button secondary" href="#features">Grow OS features</a>
+        </div>
+        <div id="features" class="grid">
+          <article class="card"><h2>Feed planning</h2><p>Simple structure for stage-based nutrient guidance.</p></article>
+          <article class="card"><h2>Product education</h2><p>Clear roles for base nutrients, additives, finishers, and support products.</p></article>
+          <article class="card"><h2>Grow tracking</h2><p>Ready to connect rooms, plants, journals, photos, and reminders.</p></article>
+        </div>
+      </section>
+      <section id="products" class="products">
+        <div class="product"><span class="dot" style="background:#7CFF00"></span>A-X PRO</div>
+        <div class="product"><span class="dot" style="background:#A6FF00"></span>B-X PRO</div>
+        <div class="product"><span class="dot" style="background:#00CFFF"></span>MICRO-X</div>
+        <div class="product"><span class="dot" style="background:#00D4A3"></span>ROOT-X</div>
+        <div class="product"><span class="dot" style="background:#A020F0"></span>VITAL-X</div>
+        <div class="product"><span class="dot" style="background:#FF8A00"></span>PK-X</div>
+        <div class="product"><span class="dot" style="background:#EFFF00"></span>TRACE-X</div>
+        <div class="product"><span class="dot" style="background:#FF1A1A"></span>RIPEN-X</div>
+        <div class="product"><span class="dot" style="background:#0033CC"></span>FLUSH-X</div>
+      </section>
+      <footer>CATALYX Labs · Science | Performance | Longevity | Evolution</footer>
+    </main>
+  </body>
+</html>
