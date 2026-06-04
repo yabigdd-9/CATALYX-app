@@ -1,24 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+function resolveSupabaseUrl(value?: string) {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+
+  try {
+    return new URL(trimmed).origin
+  } catch {
+    return trimmed.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/g, '') || undefined
+  }
+}
+
+const supabaseUrl = resolveSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL)
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 export const hasSupabase = Boolean(supabaseUrl && supabaseAnonKey)
-export const hasSupabaseAdmin = Boolean(supabaseUrl && supabaseServiceRoleKey)
-export { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey }
+export { supabaseUrl, supabaseAnonKey }
 
+/** Browser-safe Supabase client (anon key only). For admin/webhooks use `@/lib/supabase-admin`. */
 export const supabaseServer = hasSupabase && supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : null
-
-export const supabaseAdmin = hasSupabaseAdmin && supabaseUrl && supabaseServiceRoleKey
-  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
   : null
 
 export async function supabaseRest<T>(table: string, init?: RequestInit): Promise<T | null> {

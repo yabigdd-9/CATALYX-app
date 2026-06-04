@@ -37,7 +37,7 @@ export default function SubscriptionPanel({ variant = 'summary', className = '' 
           <h2 className="mt-2 text-2xl font-black text-white">{loading ? 'Checking plan...' : currentPlan.name}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">{currentPlan.positioning}</p>
         </div>
-        <StatusPill tone={isPro ? 'lime' : 'blue'}>{isPro ? 'Professional active' : 'Free access'}</StatusPill>
+        <StatusPill tone={isPro ? 'lime' : 'blue'}>{isPro ? 'Catalyx Pro active' : 'Free access'}</StatusPill>
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -110,7 +110,7 @@ export default function SubscriptionPanel({ variant = 'summary', className = '' 
                 <tr>
                   <th className="p-4">Feature</th>
                   <th className="p-4">Free</th>
-                  <th className="p-4">Professional</th>
+                  <th className="p-4">Catalyx Pro</th>
                 </tr>
               </thead>
               <tbody>

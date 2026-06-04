@@ -1,26 +1,35 @@
-import { createClient } from '@supabase/supabase-js'
+import type { SubscriptionPlanKey } from '@/lib/subscriptions'
+import { hasSupabase, supabaseServer } from '@/lib/supabase'
 
 export type AuthUser = {
   id: string
   email: string
   name: string
-  plan: 'free' | 'professional'
+  plan: SubscriptionPlanKey | 'professional'
 }
 
 export type AuthResult = {
   user: AuthUser | null
   error: string | null
+  message?: string
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+function resolveSiteUrl(value?: string) {
+  const trimmed = value?.trim()
+  if (!trimmed) return 'http://localhost:3000'
+
+  try {
+    return new URL(trimmed).origin
+  } catch {
+    return 'http://localhost:3000'
+  }
+}
+
+export const authSiteUrl = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL)
 
 export const authStorageKey = 'catalyx-auth-user'
-export const authIsConfigured = Boolean(supabaseUrl && supabaseAnonKey)
-
-export const supabaseAuth = authIsConfigured
-  ? createClient(supabaseUrl as string, supabaseAnonKey as string)
-  : null
+export const authIsConfigured = hasSupabase
+export const supabaseAuth = supabaseServer
 
 export function mockUser(email = 'grower@catalyx.local', name = 'Catalyx Grower'): AuthUser {
   return {
@@ -50,4 +59,3 @@ export function storeUser(user: AuthUser | null) {
     window.localStorage.removeItem(authStorageKey)
   }
 }
-
