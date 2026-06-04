@@ -1,23 +1,25 @@
 import { NextResponse } from 'next/server'
 import { createStripePortal, stripeConfig } from '@/lib/stripe'
-import { supabaseAdmin } from '@/lib/supabase'
+import { findStripeCustomerIdForUser, getSupabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
   const form = await request.formData().catch(() => null)
   const userId = String(form?.get('userId') ?? '')
   let customerId = String(form?.get('customerId') ?? '')
 
+  const supabaseAdmin = getSupabaseAdmin()
   if (!customerId && userId && supabaseAdmin) {
-    const { data } = await supabaseAdmin
-      .from('subscriptions')
-      .select('stripe_customer_id')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    customerId = data?.stripe_customer_id ?? ''
+    customerId = await findStripeCustomerIdForUser(supabaseAdmin, userId)
   }
 
-  const url = await createStripePortal(customerId || undefined).catch(() => `${stripeConfig.siteUrl}/profile?portal=configuration-error`)
-  return NextResponse.redirect(url || `${stripeConfig.siteUrl}/profile?mockPortal=1`, 303)
+  if (!isPortalCustomerId(customerId)) {
+    return NextResponse.redirect(`${stripeConfig.siteUrl}/account?billing=no-customer`, 303)
+  }
+
+  const url = await createStripePortal(customerId).catch(() => `${stripeConfig.siteUrl}/account?billing=portal-error`)
+  return NextResponse.redirect(url || `${stripeConfig.siteUrl}/account?billing=portal-error`, 303)
+}
+
+function isPortalCustomerId(value?: string | null) {
+  return Boolean(value?.startsWith('cus_') && !value.startsWith('cus_test_local'))
 }
