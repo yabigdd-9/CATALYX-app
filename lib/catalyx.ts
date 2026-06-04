@@ -39,6 +39,87 @@ export type TrackedGrow = {
   createdAt: string
 }
 
+export type CultivationRoom = {
+  id: string
+  name: string
+  environmentType: string
+  location: string
+  notes: string
+  createdAt: string
+}
+
+export type GrowTent = {
+  id: string
+  roomId: string
+  name: string
+  size: string
+  lightModel: string
+  airflow: string
+  notes: string
+  createdAt: string
+}
+
+export type TrackedPlant = {
+  id: string
+  growId: string
+  tentId: string
+  name: string
+  strain: string
+  stage: Stage
+  healthStatus: string
+  notes: string
+  createdAt: string
+}
+
+export type GrowPhoto = {
+  id: string
+  growId: string
+  url: string
+  stage: Stage
+  tag: string
+  notes: string
+  capturedAt: string
+  source: 'supabase' | 'local'
+}
+
+export type JournalEntry = {
+  id: string
+  growId?: string
+  type: 'Feed' | 'Check-in' | 'AI suggestion' | 'Observation'
+  title: string
+  body: string
+  approved?: boolean
+  source?: 'supabase' | 'local' | 'generated'
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type AppReminder = {
+  id: string
+  title: string
+  due: string
+  dueAt: string
+  detail: string
+  type: 'feed' | 'water' | 'photo' | 'check-in' | 'environment' | 'stage' | 'flush' | 'low-stock' | 'basic'
+  completed?: boolean
+  notifiedAt?: string
+  source?: 'supabase' | 'local' | 'seed'
+}
+
+export type DailyCheckIn = {
+  id: string
+  checkedAt: string
+  leafColour: string
+  droopLevel: number
+  growthSpeed: string
+  stressLevel: number
+  pestConcern: string
+  environmentStability: number
+  overallPlantFeel: string
+  healthScore: number
+  source?: 'supabase' | 'local'
+}
+
 export type ProductKey =
   | 'ax-pro'
   | 'bx-pro'
@@ -48,7 +129,6 @@ export type ProductKey =
   | 'pk-x'
   | 'ripen-x'
   | 'trace-x'
-  | 'iron-x'
   | 'flush-x'
 
 export type CatalyxProduct = {
@@ -259,26 +339,6 @@ export const products: CatalyxProduct[] = [
     tips: ['Use measured rates; trace products are not “more is better.”', 'Avoid stacking with MICRO-X without a reason.'],
   },
   {
-    id: 'iron-x',
-    name: 'IRON-X',
-    purpose: 'Iron supplement',
-    theme: 'Gunmetal / Silver',
-    accent: '#a8b3bd',
-    stages: ['seedling', 'vegetative', 'early-flower', 'mid-flower', 'late-flower'],
-    dose: { beginner: [0.1, 0.2], standard: [0.2, 0.4], professional: [0.4, 0.6] },
-    when: 'Use as a corrective or support supplement when iron-related symptoms are present.',
-    why: 'Iron availability is critical for chlorophyll formation and healthy new growth.',
-    how: 'Targets iron support without changing the full nutrient program.',
-    watchFor: ['Interveinal chlorosis', 'Root-zone pH', 'Overcorrection'],
-    overuse: ['Dark spotting', 'Micronutrient imbalance', 'Lockout risk'],
-    deficiency: ['Yellowing new growth', 'Pale tips', 'Slow recovery after pH drift'],
-    compatibility: 'Use only when indicated by symptoms or pH history.',
-    storage: 'Keep tightly sealed and away from contamination.',
-    shelfLife: 'Best used within 18 months of opening.',
-    mixing: 'Add at corrective rates after primary products are diluted.',
-    tips: ['Check pH before assuming deficiency.', 'Use Recovery Mode if lockout risk is present.'],
-  },
-  {
     id: 'flush-x',
     name: 'FLUSH-X',
     purpose: 'Flush solution',
@@ -364,11 +424,11 @@ export const checkIns = [
   { date: 'May 16', leaf: 'Slight tip brightness', droop: 2, growth: 'Strong', stress: 3, environment: 82, pest: 'None', feel: 'Monitor runoff' },
 ]
 
-export const reminders = [
-  { title: 'Next feed', due: 'Today 6:00 PM', detail: 'Use adaptive mid-flower recommendation.' },
-  { title: 'Daily check-in', due: 'Today', detail: 'Record leaf tone, droop, stress, and environment.' },
-  { title: 'Photo week', due: 'Tomorrow', detail: 'Capture canopy and flower close-up for comparison.' },
-  { title: 'Weekly review', due: 'Monday', detail: 'Generate Professional grow review.' },
+export const reminders: AppReminder[] = [
+  { id: 'seed-next-feed', title: 'Next feed', due: 'Today 6:00 PM', dueAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), type: 'feed', detail: 'Use adaptive mid-flower recommendation.', source: 'seed' },
+  { id: 'seed-daily-check-in', title: 'Daily check-in', due: 'Today', dueAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), type: 'check-in', detail: 'Record leaf tone, droop, stress, and environment.', source: 'seed' },
+  { id: 'seed-photo-week', title: 'Photo week', due: 'Tomorrow', dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), type: 'photo', detail: 'Capture canopy and flower close-up for comparison.', source: 'seed' },
+  { id: 'seed-weekly-review', title: 'Weekly review', due: 'Monday', dueAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), type: 'basic', detail: 'Generate Professional grow review.', source: 'seed' },
 ]
 
 export const scoreBreakdown = [
@@ -632,7 +692,7 @@ export const protocols = [
   ['Performance Protocol', 'Dialed-in standard runs', ['A-X PRO', 'B-X PRO', 'MICRO-X', 'PK-X'], 'Vegetative to Mid Flower', 'Balanced momentum with controlled bloom support'],
   ['Heavy Yield Protocol', 'Experienced growers pushing biomass', ['A-X PRO', 'B-X PRO', 'PK-X', 'TRACE-X'], 'Early to Mid Flower', 'Higher bloom drive with runoff monitoring'],
   ['Terpene Protocol', 'Quality-focused finishing', ['VITAL-X', 'RIPEN-X', 'TRACE-X'], 'Mid to Late Flower', 'Cleaner finish and expression support'],
-  ['Recovery Protocol', 'Stressed plants or root-zone instability', ['VITAL-X', 'IRON-X', 'FLUSH-X'], 'Any corrective window', 'Stabilise pH, runoff, and plant response'],
+  ['Recovery Protocol', 'Stressed plants or root-zone instability', ['VITAL-X', 'MICRO-X', 'FLUSH-X'], 'Any corrective window', 'Stabilise pH, runoff, and plant response'],
   ['Fast Veg Protocol', 'Short veg cycles', ['A-X PRO', 'B-X PRO', 'MICRO-X', 'ROOT-X'], 'Vegetative', 'Rapid canopy development'],
   ['Bloom Push Protocol', 'Flower transition', ['PK-X', 'TRACE-X'], 'Early Flower', 'Introduce bloom support gradually'],
   ['Flush & Finish Protocol', 'Final window', ['RIPEN-X', 'FLUSH-X'], 'Late Flower to Flush', 'Disciplined finish and cleanup'],
