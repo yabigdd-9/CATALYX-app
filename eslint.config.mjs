@@ -5,9 +5,14 @@ const config = [
   {
     ignores: [
       '.next/**',
+      '**/.next/**',
       'node_modules/**',
       'out/**',
       'output/**',
+      'grow-os-prod/**',
+      'public/locked-assets/**',
+      'test-results/**',
+      'tmp-logo-pack/**',
       'mobile-shell/**',
       '.adal/**',
       '.aider-desk/**',

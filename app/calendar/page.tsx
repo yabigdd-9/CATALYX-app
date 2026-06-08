@@ -2,7 +2,7 @@ import { reminders } from '@/lib/catalyx'
 import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
 import NotificationControls from '@/components/NotificationControls'
 
-const extra = ['Feed reminder', 'Water reminder', 'Photo reminder', 'Daily check-in reminder', 'Stage change reminder', 'Flush reminder', 'Harvest estimate', 'Low-stock reminder', 'Weekly grow review reminder']
+const extra = ['Feed reminder', 'Water reminder', 'Photo reminder', 'Daily check-in reminder', 'Environment log reminder', 'Stage change reminder', 'Flush reminder', 'Harvest estimate', 'Low-stock reminder', 'Weekly grow review reminder']
 
 export default function CalendarPage() {
   return (

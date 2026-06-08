@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import {
   calculateAdaptiveFeed,
   experienceLabels,
@@ -11,7 +12,9 @@ import {
   type Medium,
   type Stage,
 } from '@/lib/catalyx'
+import ProGate from '@/components/ProGate'
 import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
+import { lockedAppFeedChartAssets, lockedFeedCharts } from '@/lib/catalyx-assets'
 
 const modeByExperience: Record<Experience, GrowMode> = {
   beginner: 'Beginner Mode',
@@ -59,6 +62,62 @@ export default function FeedChartsPage() {
         ))}
       </div>
 
+      <Panel className="mt-6 overflow-hidden border-[#c8f500]/30">
+        <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="p-5">
+            <StatusPill tone="lime">Locked v17</StatusPill>
+            <h2 className="mt-4 text-3xl font-black text-white">9-SKU feed chart system</h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-400">
+              These are the locked v17 Catalyx feed chart assets used for app display, QR references, rear labels, and colour consistency. IRON-X has been removed from the live SKU system.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <AssetButton href={lockedFeedCharts.master.pdf}>Master PDF</AssetButton>
+              <AssetButton href={lockedFeedCharts.oneLitreRear.pdf}>1L rear PDF</AssetButton>
+              <AssetButton href={lockedFeedCharts.fiveLitreBulkRear.pdf}>5L rear PDF</AssetButton>
+              <AssetButton href={lockedFeedCharts.colourReference.pdf}>Colour reference</AssetButton>
+            </div>
+          </div>
+          <div className="bg-black/40 p-4">
+            <div className="relative h-[320px] md:h-[520px]">
+              <Image
+                src={lockedAppFeedChartAssets.mainWide}
+                alt="Catalyx locked v17 master feed chart"
+                fill
+                sizes="(max-width: 1024px) 100vw, 44vw"
+                className="rounded-md border border-white/10 object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </Panel>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          ['Main feed chart', lockedAppFeedChartAssets.mainCard, lockedFeedCharts.master.png],
+          ['1L rear chart', lockedAppFeedChartAssets.oneLitreCard, lockedFeedCharts.oneLitreRear.png],
+          ['5L bulk chart', lockedAppFeedChartAssets.fiveLitreCard, lockedFeedCharts.fiveLitreBulkRear.png],
+          ['SKU colour reference', lockedAppFeedChartAssets.colourReferenceCard, lockedFeedCharts.colourReference.png],
+        ].map(([title, image, href]) => (
+          <a key={title} href={href} target="_blank" rel="noreferrer">
+            <Panel className="overflow-hidden transition hover:border-[#c8f500]/50">
+              <div className="relative aspect-[4/5] w-full">
+                <Image src={image} alt={`${title} v17 app card`} fill sizes="(max-width: 1280px) 50vw, 22vw" className="object-cover" />
+              </div>
+              <div className="p-4">
+                <p className="text-sm font-black text-white">{title}</p>
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#d9ff34]">Open locked asset</p>
+              </div>
+            </Panel>
+          </a>
+        ))}
+      </div>
+
+      <ProGate
+        featureKey="advanced_feed_charts"
+        feature="Advanced feed charts"
+        reason="Catalyx Pro unlocks full adaptive charts across hydro, coco, and soil with runoff and stress modifiers — free users see a preview."
+        preview
+      >
       <div className="mt-6 grid gap-6">
         {mediumOrder.map((medium) => (
           <Panel key={medium} className="overflow-hidden">
@@ -107,6 +166,15 @@ export default function FeedChartsPage() {
           </Panel>
         ))}
       </div>
+      </ProGate>
     </ShellSection>
+  )
+}
+
+function AssetButton({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="rounded-md border border-white/15 bg-white/5 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white hover:border-[#c8f500]/60 hover:text-[#d9ff34]">
+      {children}
+    </a>
   )
 }

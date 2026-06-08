@@ -5,7 +5,7 @@ import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/cataly
 export default function ProtocolsPage() {
   return (
     <ShellSection>
-      <PageHeader title="Catalyx protocols" copy="Product systems and recipes, not just bottles: starter, performance, heavy yield, terpene, recovery, veg, bloom, finish, stress, beginner, and professional protocols." />
+      <PageHeader title="Catalyx protocols" copy="Build workflows around the locked Catalyx kit system: Base Kit, Core Kit, Enhancement Kit, Final Stage Kit, Performance Kit, and Complete Kit." />
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {protocols.map(([name, audience, used, stage, benefit], index) => (
           <Panel key={name} className="p-5">
@@ -26,4 +26,3 @@ export default function ProtocolsPage() {
     </ShellSection>
   )
 }
-

@@ -1,27 +1,85 @@
 import { NextResponse } from 'next/server'
 import { activeGrow, feedLogs, recommendationEngine, scoreBreakdown } from '@/lib/catalyx'
+import { compareGrowRows, outcomeForecast, recoveryPlan, weeklyReview } from '@/lib/pro-insights'
+import { createBrandedPdfReport } from '@/lib/pdf-report'
 
 export async function GET() {
-  const lines = [
-    'Catalyx Labs Grow Report',
-    `Grow: ${activeGrow.name}`,
-    `Strain: ${activeGrow.strain}`,
-    `Stage: ${activeGrow.stage}`,
-    `Medium: ${activeGrow.medium}`,
-    '',
-    'Scores',
-    ...scoreBreakdown.map((score) => `${score.label}: ${score.value}/100 - ${score.note}`),
-    '',
-    'Feed History',
-    ...feedLogs.map((log) => `${log.date}: ${log.litres} L, EC ${log.ec}, pH ${log.ph}, runoff EC ${log.runoffEc}, response ${log.response}`),
-    '',
-    'Recommendations',
-    ...recommendationEngine().map((item) => `${item.title}: ${item.action} Why: ${item.why}`),
-    '',
-    'Disclaimer: The app provides general cultivation and plant nutrition guidance only. Users are responsible for following all local laws and product label directions.',
-  ]
-
-  const pdf = createSimplePdf(lines)
+  const generatedAt = new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  const pdf = createBrandedPdfReport({
+    title: 'Professional Grow Report',
+    subtitle: `${activeGrow.name} / ${activeGrow.strain} / generated ${generatedAt}`,
+    sections: [
+      {
+        title: 'Grow Profile',
+        lines: [
+          `Grow: ${activeGrow.name}`,
+          `Strain: ${activeGrow.strain}`,
+          `Stage: ${activeGrow.stage}`,
+          `Medium: ${activeGrow.medium}`,
+          `Goal: ${activeGrow.goal}`,
+          `Health status: ${activeGrow.healthStatus}`,
+        ],
+      },
+      {
+        title: 'Executive Summary',
+        lines: [
+          weeklyReview.headline,
+          `Grow score: ${weeklyReview.growScore}/100. Direction: ${weeklyReview.direction}.`,
+          'Catalyx interpretation: focus on the next correct action, avoid overreacting to single readings, and keep feed changes tied to logged evidence.',
+        ],
+      },
+      {
+        title: 'Scores',
+        lines: scoreBreakdown.map((score) => `${score.label}: ${score.value}/100 - ${score.note}`),
+      },
+      {
+        title: 'Feed History',
+        lines: feedLogs.map((log) => `${log.date}: ${log.litres} L, EC ${log.ec}, pH ${log.ph}, runoff EC ${log.runoffEc}, runoff pH ${log.runoffPh}. Response: ${log.response}. Products: ${log.products.join(', ')}.`),
+      },
+      {
+        title: 'Recommendations',
+        lines: recommendationEngine().map((item) => `${item.title}: ${item.action} Why: ${item.why} Confidence: ${item.confidence}.`),
+      },
+      {
+        title: 'Weekly Grow Review',
+        lines: [
+          `Strengths: ${weeklyReview.strengths.join(' / ')}`,
+          `Issues: ${weeklyReview.issues.join(' / ')}`,
+          `Next week: ${weeklyReview.nextWeek.join(' / ')}`,
+        ],
+      },
+      {
+        title: 'Recovery Plan',
+        lines: [
+          `Trigger: ${recoveryPlan.trigger}`,
+          `Goal: ${recoveryPlan.goal}`,
+          ...recoveryPlan.checklist.map(([title, body]) => `${title}: ${body}`),
+          `Avoid: ${recoveryPlan.avoid.join(' / ')}`,
+        ],
+      },
+      {
+        title: 'Outcome Forecast',
+        lines: outcomeForecast.map(([label, status, body]) => `${label}: ${status} - ${body}`),
+      },
+      {
+        title: 'Compare My Grow',
+        lines: compareGrowRows.map(([signal, current, previous, change, interpretation]) => `${signal}: current ${current}, previous ${previous}, change ${change}. ${interpretation}`),
+      },
+      {
+        title: 'Environment Summary',
+        lines: [
+          'Latest baseline: temperature 25 C, humidity 58%, VPD 1.18, water temperature 20 C, PPFD 720, DLI 31.',
+          'Interpretation: environment is stable enough to support the current feed recommendation.',
+        ],
+      },
+      {
+        title: 'Safety Disclaimer',
+        lines: [
+          'This app provides general cultivation and plant nutrition guidance only. Users are responsible for following all local laws and product label directions.',
+        ],
+      },
+    ],
+  })
 
   return new NextResponse(pdf, {
     headers: {
@@ -30,38 +88,3 @@ export async function GET() {
     },
   })
 }
-
-function createSimplePdf(lines: string[]) {
-  const escaped = lines.flatMap((line) => wrap(line, 92)).map((line) => line.replace(/[()\\]/g, '\\$&'))
-  const content = escaped.map((line, index) => `BT /F1 10 Tf 50 ${760 - index * 14} Td (${line}) Tj ET`).join('\n')
-  const objects = [
-    '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
-    '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj',
-    '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj',
-    '4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',
-    `5 0 obj << /Length ${content.length} >> stream\n${content}\nendstream endobj`,
-  ]
-  let offset = '%PDF-1.4\n'.length
-  const xref = objects.map((object) => {
-    const current = offset
-    offset += object.length + 1
-    return current
-  })
-  const body = objects.join('\n')
-  const xrefStart = '%PDF-1.4\n'.length + body.length + 1
-  const table = ['xref', `0 ${objects.length + 1}`, '0000000000 65535 f ', ...xref.map((item) => `${String(item).padStart(10, '0')} 00000 n `)].join('\n')
-  return `%PDF-1.4\n${body}\n${table}\ntrailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`
-}
-
-function wrap(line: string, width: number) {
-  if (line.length <= width) return [line]
-  const chunks: string[] = []
-  let rest = line
-  while (rest.length > width) {
-    chunks.push(rest.slice(0, width))
-    rest = rest.slice(width)
-  }
-  chunks.push(rest)
-  return chunks
-}
-

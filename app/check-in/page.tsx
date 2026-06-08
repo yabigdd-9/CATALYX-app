@@ -1,4 +1,5 @@
 import QuickCheckIn from '@/components/QuickCheckIn'
+import ProgressMilestones from '@/components/ProgressMilestones'
 import { PageHeader, Panel, ShellSection } from '@/components/catalyx-ui'
 
 export default function CheckInPage() {
@@ -23,7 +24,7 @@ export default function CheckInPage() {
           </div>
         </Panel>
       </div>
+      <ProgressMilestones className="mt-6" />
     </ShellSection>
   )
 }
-

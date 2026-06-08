@@ -1,7 +1,8 @@
 import { feedLogs, scoreBreakdown } from '@/lib/catalyx'
-import { MetricCard, PageHeader, Panel, ShellSection } from '@/components/catalyx-ui'
+import { MetricCard, PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
 import TrendChart from '@/components/TrendChart'
 import ProGate from '@/components/ProGate'
+import { proAnalyticsLayers } from '@/lib/pro-features'
 
 const chartRows: Array<[string, number[], string, string]> = [
   ['Feed EC history', feedLogs.map((log) => log.ec), '#c8f500', 'input EC'],
@@ -16,7 +17,21 @@ export default function AnalyticsPage() {
   return (
     <ShellSection>
       <PageHeader title="Grow analytics" copy="Feed history, pH, EC, runoff, product usage, cost estimate, stability trends, score trends, photo timeline, stage timeline, and improvement suggestions." />
-      <ProGate feature="Advanced grow analytics" reason="Analytics combines feed logs, runoff trends, score history, product usage, and stage movement into professional decision support.">
+      <ProGate featureKey="ec_ph_runoff_analytics" feature="Advanced grow analytics" reason="Analytics combines feed logs, runoff trends, score history, product usage, and stage movement into professional decision support." preview>
+        <Panel className="mt-6 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl font-black">Professional analytics layers</h2>
+            <StatusPill tone="lime">Subscriber depth</StatusPill>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {proAnalyticsLayers.map(([title, body]) => (
+              <div key={title} className="rounded-md border border-white/10 bg-black/30 p-4">
+                <p className="font-black text-white">{title}</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">{body}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           {scoreBreakdown.slice(4).map((score) => (
             <MetricCard key={score.label} {...score} />

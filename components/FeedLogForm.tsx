@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { calculateFeed, feedLogs, stageLabels, type Experience, type GrowMode, type Medium, type Stage } from '@/lib/catalyx'
 import { EmptyState, Panel, ProductAccent, SaveBanner, StatusPill } from '@/components/catalyx-ui'
 import { readLocalList, storageKeys, writeLocalList } from '@/lib/persistence'
+import ProFeedAdvisor from '@/components/ProFeedAdvisor'
 import { saveFeedLogToSupabase } from '@/lib/supabase-services'
 
 type SavedFeedLog = {
@@ -176,6 +177,9 @@ export default function FeedLogForm() {
               {warning}
             </div>
           ))}
+        </div>
+        <div className="mt-4">
+          <ProFeedAdvisor stage={stage} medium={medium} ec={ec} ph={ph} runoffEc={runoffEc} runoffPh={runoffPh} response={response} />
         </div>
         {saved.length ? (
           <div className="mt-5">

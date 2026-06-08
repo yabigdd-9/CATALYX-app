@@ -2,11 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --cx-toxic-lime: #7cff00;
+  --cx-hyper-lime: #8bff3d;
+  --cx-electric-blue: #169dff;
+  --cx-aqua-teal: #00d1c7;
+  --cx-vivid-violet: #a855f7;
+  --cx-neon-orange: #ff7a00;
+  --cx-laser-yellow: #efff00;
+  --cx-signal-red: #ff4444;
+  --cx-bright-aqua-blue: #00a3ff;
+}
+
 body {
   background-color: #050707;
   color: #f8fafc;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
+  text-rendering: optimizeLegibility;
 }
 
 html {
@@ -14,7 +27,7 @@ html {
 }
 
 ::selection {
-  background: #c8f500;
+  background: var(--cx-toxic-lime);
   color: #050707;
 }
 
@@ -29,6 +42,20 @@ button {
   font: inherit;
 }
 
+a,
+button,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cx-toxic-lime);
+  outline-offset: 2px;
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -39,4 +66,22 @@ body::before {
     linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
   background-size: 44px 44px;
+}
+
+.brand-logo-blend {
+  filter: drop-shadow(0 0 18px rgba(124, 255, 0, 0.2));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

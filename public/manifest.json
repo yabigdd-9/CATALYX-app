@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "Catalyx Labs",
   "short_name": "Catalyx",
   "description": "Precision cultivation made simple.",
-  "start_url": "/dashboard",
+  "lang": "en-NZ",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "browser"],
@@ -11,7 +13,9 @@
   "orientation": "portrait",
   "categories": ["productivity", "utilities", "education"],
   "icons": [
-    { "src": "/brand/official/logo-app-icon-official.png", "sizes": "200x200", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/brand/catalyx/favicon_128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/catalyx/favicon_256x256.png", "sizes": "256x256", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/brand/catalyx/favicon_512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
     {
@@ -25,6 +29,12 @@
       "short_name": "Feed",
       "description": "Record a fast feed log.",
       "url": "/feed-log"
+    },
+    {
+      "name": "Reminders",
+      "short_name": "Remind",
+      "description": "Open scheduled Catalyx grow reminders.",
+      "url": "/reminders"
     },
     {
       "name": "Calculator",

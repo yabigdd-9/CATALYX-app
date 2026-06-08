@@ -1,4 +1,5 @@
 import { labNotes, universityLessons } from '@/lib/catalyx'
+import ProGate from '@/components/ProGate'
 import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
 
 const learningTracks = [
@@ -93,6 +94,12 @@ export default function UniversityPage() {
         </Panel>
       </div>
 
+      <ProGate
+        featureKey="deficiency_troubleshooting"
+        feature="Full Catalyx University"
+        reason="Catalyx Pro unlocks diagnostic lessons, deficiency vs lockout guides, flower steering, and the full lesson library."
+        preview
+      >
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Panel className="p-5">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -147,6 +154,7 @@ export default function UniversityPage() {
           </Panel>
         ))}
       </div>
+      </ProGate>
     </ShellSection>
   )
 }
