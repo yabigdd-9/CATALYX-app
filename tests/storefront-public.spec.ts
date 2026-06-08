@@ -49,6 +49,8 @@ test.describe('public storefront launch surfaces', () => {
     await page.goto('/products/ax-pro', { waitUntil: 'domcontentloaded' })
 
     await expect(page.getByRole('link', { name: 'Open feed chart' })).toBeVisible()
+    await expect(page.getByText('Product detail')).toBeVisible()
+    await expect(page.getByText('A-X PRO is the first half of the Catalyx two-part base.')).toBeVisible()
     await expect(page.getByText('Included in kits')).toBeVisible()
     await expect(page.getByText('Included in kits').locator('..').getByRole('link', { name: 'Base Kit', exact: true })).toBeVisible()
     await expect(page.getByText('Product-page trust signals')).toBeVisible()

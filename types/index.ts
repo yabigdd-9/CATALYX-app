@@ -2,9 +2,13 @@ export interface Product {
   id: string
   name: string
   description: string
+  details?: string
   price: number
   image: string
   category: string
+  sku?: string
+  size?: string
+  usageNote?: string
   inStock: boolean
 }
 
