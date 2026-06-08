@@ -2,11 +2,16 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { activeGrow, defaultOnboardingSetup, mediumLabels, productsForStage, recommendationEngine, reminders, scoreBreakdown, stageLabels, type OnboardingSetup, type TrackedGrow } from '@/lib/catalyx'
+import { activeGrow, defaultOnboardingSetup, mediumLabels, productsForStage, recommendationEngine, reminders, stageLabels, type OnboardingSetup, type TrackedGrow } from '@/lib/catalyx'
 import { MetricCard, MiniGraph, PageHeader, Panel, PrimaryActionPanel, ProductAccent, RecommendationCard, ShellSection, StatusPill } from '@/components/catalyx-ui'
 import { readLocalList, readLocalObject, storageKeys } from '@/lib/persistence'
-import { loadFeedLogsFromSupabase } from '@/lib/supabase-services'
+import { loadEnvironmentLogsFromSupabase, loadFeedLogsFromSupabase } from '@/lib/supabase-services'
+import { calculateLiveScores, type IntelligenceEnvironmentLog } from '@/lib/pro-insights'
 import SubscriptionPanel from '@/components/SubscriptionPanel'
+import ProWorkspaceLinks from '@/components/ProWorkspaceLinks'
+import ProgressMilestones from '@/components/ProgressMilestones'
+import CheckoutActivationBanner from '@/components/CheckoutActivationBanner'
+import RewardsExchangePanel from '@/components/RewardsExchangePanel'
 
 type LocalFeedLog = {
   date: string
@@ -18,8 +23,17 @@ type LocalFeedLog = {
   response: string
 }
 
+type LocalEnvironmentLog = IntelligenceEnvironmentLog & {
+  id?: string
+  loggedAt?: string
+  note?: string
+}
+
 export default function DashboardPage() {
+  const [checkoutSuccess] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('checkout') === 'success')
+  const [checkoutSessionId] = useState(() => typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('session_id') : null)
   const [savedLogs, setSavedLogs] = useState<LocalFeedLog[]>(() => readLocalList<LocalFeedLog>(storageKeys.feedLogs))
+  const [environmentLogs, setEnvironmentLogs] = useState<LocalEnvironmentLog[]>(() => readLocalList<LocalEnvironmentLog>(storageKeys.environmentLogs))
   const [setup] = useState<OnboardingSetup>(() => readLocalObject<OnboardingSetup>(storageKeys.onboarding, defaultOnboardingSetup))
   const [savedGrows] = useState<TrackedGrow[]>(() => readLocalList<TrackedGrow>(storageKeys.grows))
 
@@ -27,6 +41,11 @@ export default function DashboardPage() {
     loadFeedLogsFromSupabase()
       .then((logs) => {
         if (logs.length) setSavedLogs(logs)
+      })
+      .catch(() => undefined)
+    loadEnvironmentLogsFromSupabase()
+      .then((logs) => {
+        if (logs.length) setEnvironmentLogs(logs)
       })
       .catch(() => undefined)
   }, [])
@@ -58,9 +77,15 @@ export default function DashboardPage() {
     mode: currentGrow.goal,
     runoffTrend,
   })
+  const liveScores = useMemo(() => calculateLiveScores({ feedLogs: savedLogs, environmentLogs }), [savedLogs, environmentLogs])
   const topRecommendation = recommendations[1]
-  const primaryTitle = runoffTrend === 'rising' ? "Hold feed strength and log runoff after tonight's feed." : runoffTrend === 'stable' ? 'Maintain feed strength and keep the routine consistent.' : 'Runoff is easing. Maintain the recovery trend.'
-  const primaryBody = runoffTrend === 'rising'
+  const environmentNeedsAction = liveScores.environmentStatus !== 'stable'
+  const primaryTitle = environmentNeedsAction
+    ? 'Stabilise environment before increasing feed strength.'
+    : runoffTrend === 'rising' ? "Hold feed strength and log runoff after tonight's feed." : runoffTrend === 'stable' ? 'Maintain feed strength and keep the routine consistent.' : 'Runoff is easing. Maintain the recovery trend.'
+  const primaryBody = environmentNeedsAction
+    ? `${liveScores.environmentSummary} Catalyx recommends fixing the room or root-zone variable before treating this as a nutrient demand signal.`
+    : runoffTrend === 'rising'
     ? 'Runoff EC is trending upward. The safest high-confidence move is to maintain strength, feed cleanly, and capture runoff before increasing bloom products.'
     : runoffTrend === 'stable'
       ? 'Recent feed values are stable. Catalyx recommends consistency over adjustment until the next check-in changes the signal.'
@@ -68,10 +93,17 @@ export default function DashboardPage() {
   const evidenceText = savedLogs.length >= 3
     ? `Saved logs: ${savedLogs.slice(0, 3).map((log) => `${log.date} runoff EC ${log.runoffEc}`).join(', ')}.`
     : 'Seeded baseline is active. Save three feed logs to increase confidence.'
+  const metricScores = [
+    { label: 'Catalyx Grow Score', value: liveScores.growScore, note: `${liveScores.confidence} confidence from feed and environment evidence` },
+    { label: 'Plant Health Score', value: liveScores.plantHealth, note: liveScores.environmentSummary },
+    { label: 'Feed Stability Score', value: liveScores.feedStability, note: `Runoff trend: ${liveScores.runoffTrend}` },
+    { label: 'Environment Consistency Score', value: liveScores.environment, note: environmentLogs.length ? liveScores.environmentSummary : 'Add an environment log to increase confidence' },
+  ]
 
   return (
     <ShellSection>
       <PageHeader title="Grow command dashboard" copy="Open the app and know the next correct action: feed, check, hold, adjust, or monitor." />
+      <CheckoutActivationBanner checkoutSuccess={checkoutSuccess} sessionId={checkoutSessionId} />
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <PrimaryActionPanel
           meta="Next best action"
@@ -99,8 +131,14 @@ export default function DashboardPage() {
         <SubscriptionPanel variant="summary" />
       </div>
 
+      <ProWorkspaceLinks className="mt-6" />
+
+      <ProgressMilestones className="mt-6" />
+
+      <RewardsExchangePanel className="mt-6" variant="compact" />
+
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        {scoreBreakdown.slice(0, 4).map((score, index) => (
+        {metricScores.map((score, index) => (
           <MetricCard key={score.label} {...score} accent={['#c8f500', '#16d6c8', '#ff8a1f', '#33d9ff'][index]} />
         ))}
       </div>
@@ -153,8 +191,8 @@ export default function DashboardPage() {
         {[
           ['Log feed', '/feed-log'],
           ['Daily check-in', '/check-in'],
+          ['Log environment', '/environment'],
           ['Calculate feed', '/feed-calculator'],
-          ['Manage reminders', '/reminders'],
         ].map(([label, href]) => (
           <Link key={href} href={href} className="rounded-md border border-[#c8f500]/30 bg-[#c8f500]/10 px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] text-[#d9ff34] transition hover:bg-[#c8f500] hover:text-black">
             {label}
@@ -162,11 +200,22 @@ export default function DashboardPage() {
         ))}
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        {recommendations.map((item) => (
+        {[
+          environmentNeedsAction
+            ? {
+                title: 'Environment correction recommended',
+                action: 'Stabilise VPD, humidity, temperature, light, or water temperature before increasing feed pressure.',
+                why: liveScores.environmentSummary,
+                confidence: environmentLogs.length ? 'High' : 'Low',
+                severity: 'warning',
+              }
+            : null,
+          ...recommendations,
+        ].filter(Boolean).map((item) => (
           <RecommendationCard
-            key={item.title}
-            {...item}
-            evidence={item.title.includes('Runoff') ? evidenceText : 'Current stage, medium, grow mode, and latest feed/check-in data.'}
+            key={item!.title}
+            {...item!}
+            evidence={item!.title.includes('Runoff') ? evidenceText : item!.title.includes('Environment') ? liveScores.environmentSummary : 'Current stage, medium, grow mode, and latest feed/check-in data.'}
           />
         ))}
       </div>

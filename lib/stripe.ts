@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { products as storeProducts } from '@/lib/products'
+import { hasSupabaseAdmin } from '@/lib/supabase-admin'
 import type { CartItem } from '@/types'
 
 export type StripeMode = 'test' | 'live'
@@ -25,6 +26,9 @@ export type StripeLaunchProfile = {
   summary: string
   productionReady: boolean
   localTestingReady: boolean
+  supabaseAdminConfigured: boolean
+  webhookPersistenceReady: boolean
+  productOrderPersistenceReady: boolean
   blockers: StripeLaunchBlocker[]
   notes: string[]
   diagnostics: StripeLaunchDiagnostic[]
@@ -155,11 +159,19 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
   const secretKeyKind = getStripeKeyKind(stripeConfig.secretKey)
   const secretKeySource = getStripeSecretKeySource()
   const localWebhookTestEnabled = process.env.STRIPE_WEBHOOK_TEST_ENABLED === 'true'
+  const supabaseAdminConfigured = hasSupabaseAdmin
   const modeSecretAligned = stripeKeyMatchesMode(stripeConfig.secretKey, stripeConfig.mode)
   const productIdReady = isValidProductId(stripeConfig.productId)
   const monthlyPriceReady = isValidPriceId(stripeConfig.monthlyPriceId)
   const yearlyPriceReady = isValidPriceId(stripeConfig.yearlyPriceId)
   const webhookReady = Boolean(stripeConfig.webhookSecret)
+  const webhookPersistenceReady = webhookReady && supabaseAdminConfigured
+  const productOrderPersistenceReady =
+    webhookPersistenceReady &&
+    productIdReady &&
+    monthlyPriceReady &&
+    yearlyPriceReady &&
+    stripeConfig.productAutomaticTaxEnabled
   const productionReady =
     stripeConfig.mode === 'live' &&
     secretKeyKind === 'live' &&
@@ -168,6 +180,7 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
     monthlyPriceReady &&
     yearlyPriceReady &&
     webhookReady &&
+    supabaseAdminConfigured &&
     stripeConfig.productAutomaticTaxEnabled &&
     siteUrlKind === 'production' &&
     !localWebhookTestEnabled
@@ -179,7 +192,8 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
     productIdReady &&
     monthlyPriceReady &&
     yearlyPriceReady &&
-    webhookReady
+    webhookReady &&
+    supabaseAdminConfigured
 
   const blockers: StripeLaunchBlocker[] = []
   if (stripeConfig.mode !== 'live') {
@@ -239,6 +253,12 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
       detail: 'Set STRIPE_WEBHOOK_SECRET to the signing secret from the production webhook endpoint.',
     })
   }
+  if (!supabaseAdminConfigured) {
+    blockers.push({
+      label: 'Supabase service role is missing',
+      detail: 'Set SUPABASE_SERVICE_ROLE_KEY so Stripe webhooks can persist subscriptions and product_orders rows.',
+    })
+  }
   if (!stripeConfig.productAutomaticTaxEnabled) {
     blockers.push({
       label: 'Product automatic tax is not enabled',
@@ -274,6 +294,9 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
 
   const notes = [
     'This page only syntax-checks Product and Price IDs. Stripe uses the same `prod_...` and `price_...` prefixes in test and live mode, so confirm the live IDs in Stripe Dashboard or with `npm run stripe:list-prices` using a live secret key.',
+    supabaseAdminConfigured
+      ? 'SUPABASE_SERVICE_ROLE_KEY is present in the server runtime, so webhook persistence can write subscriptions and product_orders records.'
+      : 'SUPABASE_SERVICE_ROLE_KEY is missing, so checkout success can be verified visually but webhook persistence cannot write subscriptions or product_orders records.',
     secretKeySource === 'STRIPE_SECRET_KEY' && (trimEnv(process.env.STRIPE_SECRET_KEY_TEST) || trimEnv(process.env.STRIPE_SECRET_KEY_LIVE))
       ? 'STRIPE_SECRET_KEY overrides STRIPE_SECRET_KEY_TEST and STRIPE_SECRET_KEY_LIVE in this app. Remove duplicate key vars if you want the active key source to be unambiguous.'
       : '',
@@ -326,6 +349,27 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
       webhookReady
         ? 'STRIPE_WEBHOOK_SECRET is set. Register the production webhook endpoint with the required events before launch.'
         : 'Set STRIPE_WEBHOOK_SECRET from the production webhook endpoint.',
+    ],
+    [
+      'Supabase service role',
+      supabaseAdminConfigured,
+      supabaseAdminConfigured
+        ? 'SUPABASE_SERVICE_ROLE_KEY is set, so webhook persistence can write subscriptions and product_orders.'
+        : 'Set SUPABASE_SERVICE_ROLE_KEY so Stripe webhooks can persist checkout confirmations.',
+    ],
+    [
+      'Webhook persistence',
+      webhookPersistenceReady,
+      webhookPersistenceReady
+        ? 'Stripe can persist webhook events because both the signing secret and Supabase service role are configured.'
+        : 'Set both STRIPE_WEBHOOK_SECRET and SUPABASE_SERVICE_ROLE_KEY before launch.',
+    ],
+    [
+      'Product-order persistence',
+      productOrderPersistenceReady,
+      productOrderPersistenceReady
+        ? 'Paid /cart checkouts can upsert product_orders with order_lines.'
+        : 'Set the webhook secret, Supabase service role, product IDs, prices, and automatic tax before live product orders.',
     ],
     [
       'Product automatic tax',
@@ -382,6 +426,24 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
       tone: webhookReady ? 'lime' : 'amber',
     },
     {
+      label: 'Supabase service role',
+      value: supabaseAdminConfigured ? 'Configured' : 'Not set',
+      status: supabaseAdminConfigured ? 'Ready for webhook writes' : 'Missing',
+      tone: supabaseAdminConfigured ? 'lime' : 'amber',
+    },
+    {
+      label: 'Webhook persistence',
+      value: webhookPersistenceReady ? 'Enabled' : 'Blocked',
+      status: webhookPersistenceReady ? 'Stripe events can persist' : 'Needs secret and service role',
+      tone: webhookPersistenceReady ? 'lime' : 'amber',
+    },
+    {
+      label: 'Product-order persistence',
+      value: productOrderPersistenceReady ? 'Ready' : 'Blocked',
+      status: productOrderPersistenceReady ? 'order_lines upsert path is live' : 'Needs checkout env + service role',
+      tone: productOrderPersistenceReady ? 'lime' : 'amber',
+    },
+    {
       label: 'Local webhook test',
       value: localWebhookTestEnabled ? 'Enabled' : 'Disabled',
       status: localWebhookTestEnabled ? 'Local-only flag is on' : 'Off',
@@ -431,6 +493,7 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
     'STRIPE_MODE=live',
     'STRIPE_SECRET_KEY=rk_live_...',
     'STRIPE_WEBHOOK_SECRET=whsec_...',
+    'SUPABASE_SERVICE_ROLE_KEY=...',
     'STRIPE_PRODUCT_PRO=prod_...',
     'STRIPE_PRICE_PRO_MONTHLY=price_...',
     'STRIPE_PRICE_PRO_YEARLY=price_...',
@@ -442,6 +505,7 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
     'Run npm run stripe:list-prices with the live secret key and confirm STRIPE_PRODUCT_PRO, STRIPE_PRICE_PRO_MONTHLY, and STRIPE_PRICE_PRO_YEARLY resolve in live mode.',
     'Register https://your-domain.com/api/stripe/webhook with checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed, customer.subscription.*, and invoice.payment_failed.',
     'Confirm SUPABASE_SERVICE_ROLE_KEY exists in the deployed server runtime so webhook events can persist plan and product-order updates.',
+    'Call /api/stripe/checkout-status?session_id=cs_... after a real checkout and confirm the response shows persisted true together with the stored product order summary.',
     'Deploy, open /stripe-setup, and confirm the page shows Deploy-ready live Stripe config with no remaining production blockers.',
     'Complete a real subscription checkout from /pricing, confirm Pro unlocks, and confirm the billing portal opens from /account.',
     'Complete a real product checkout from /cart and confirm product_orders plus order_lines persist the purchased SKUs and quantities.',
@@ -455,6 +519,9 @@ function buildStripeLaunchProfile(): StripeLaunchProfile {
     summary,
     productionReady,
     localTestingReady,
+    supabaseAdminConfigured,
+    webhookPersistenceReady,
+    productOrderPersistenceReady,
     blockers,
     notes,
     diagnostics,
