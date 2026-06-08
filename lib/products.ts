@@ -44,7 +44,7 @@ export const products: Product[] = [
     sku: 'CXL-ROT-1L',
     size: '250 mL / 1 L',
     usageNote: 'Best used early in the cycle and around transplant or establishment windows.',
-    inStock: true,
+    inStock: false,
   },
   {
     id: 'vital-x',
@@ -58,7 +58,7 @@ export const products: Product[] = [
     sku: 'CXL-VIT-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use around stress windows or when consistency matters more than pushing feed harder.',
-    inStock: true,
+    inStock: false,
   },
   {
     id: 'pk-x',
@@ -101,7 +101,7 @@ export const products: Product[] = [
     sku: 'CXL-MIC-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use measured rates when trace balance is needed. More is not better with micros.',
-    inStock: false,
+    inStock: true,
   },
   {
     id: 'trace-x',
@@ -115,7 +115,7 @@ export const products: Product[] = [
     sku: 'CXL-TRC-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use carefully in bloom support windows and avoid stacking trace products without a reason.',
-    inStock: false,
+    inStock: true,
   },
   {
     id: 'flush-x',

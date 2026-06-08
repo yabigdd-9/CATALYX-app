@@ -56,15 +56,23 @@ test.describe('public storefront launch surfaces', () => {
     await expect(page.getByText('Product-page trust signals')).toBeVisible()
   })
 
-  test('coming-soon products stay visible but unavailable for checkout', async ({ page }) => {
+  test('specialist products expose the correct checkout state', async ({ page }) => {
     await page.goto('/collections/specialist', { waitUntil: 'domcontentloaded' })
 
     await expect(page.getByRole('heading', { name: 'MICRO-X' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'TRACE-X' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'FLUSH-X' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /MICRO-X is coming soon/i })).toBeDisabled()
-    await expect(page.getByRole('button', { name: /TRACE-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /Add MICRO-X to cart/i })).toBeEnabled()
+    await expect(page.getByRole('button', { name: /Add TRACE-X to cart/i })).toBeEnabled()
     await expect(page.getByRole('button', { name: /FLUSH-X is coming soon/i })).toBeDisabled()
+  })
+
+  test('additive and ripening products expose the correct checkout state', async ({ page }) => {
+    await page.goto('/collections/additives', { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByRole('button', { name: /ROOT-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /VITAL-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /Add PK-X to cart/i })).toBeEnabled()
 
     await page.goto('/products/ripen-x', { waitUntil: 'domcontentloaded' })
 
