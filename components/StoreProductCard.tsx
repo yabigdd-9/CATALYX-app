@@ -47,7 +47,9 @@ export default function StoreProductCard({
             </h3>
             <p className="mt-2 text-sm font-semibold text-zinc-200">{product.purpose}</p>
           </div>
-          <StatusPill tone="lime">NZD ${storeProduct.price.toFixed(2)}</StatusPill>
+          <StatusPill tone={storeProduct.inStock ? 'lime' : 'amber'}>
+            {storeProduct.inStock ? `NZD $${storeProduct.price.toFixed(2)}` : 'Coming soon'}
+          </StatusPill>
         </div>
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{product.why}</p>

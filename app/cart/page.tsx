@@ -138,7 +138,7 @@ function CartPageContent() {
                       <h3 className="text-xl font-black text-white">{item.productId}</h3>
                       <StatusPill tone="red">Removed SKU</StatusPill>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">This product is unavailable. Remove it before checkout.</p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-400">This product is coming soon and cannot be checked out yet. Remove it before checkout.</p>
                   </div>
                   <button onClick={() => removeFromCart(item.productId)} className="rounded-md border border-[#ff3b45]/40 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#ff8b92]">
                     Remove
@@ -150,7 +150,7 @@ function CartPageContent() {
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="text-xl font-black text-white">{product.name}</h3>
-                      <StatusPill tone={product.inStock ? 'lime' : 'red'}>{product.inStock ? 'In stock' : 'Out of stock'}</StatusPill>
+                      <StatusPill tone={product.inStock ? 'lime' : 'amber'}>{product.inStock ? 'In stock' : 'Coming soon'}</StatusPill>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">{product.description}</p>
                     <p className="mt-2 text-sm font-bold text-[#c8f500]">NZD ${product.price.toFixed(2)} each</p>

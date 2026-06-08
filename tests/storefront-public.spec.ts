@@ -56,6 +56,23 @@ test.describe('public storefront launch surfaces', () => {
     await expect(page.getByText('Product-page trust signals')).toBeVisible()
   })
 
+  test('coming-soon products stay visible but unavailable for checkout', async ({ page }) => {
+    await page.goto('/collections/specialist', { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByRole('heading', { name: 'MICRO-X' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'TRACE-X' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'FLUSH-X' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /MICRO-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /TRACE-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /FLUSH-X is coming soon/i })).toBeDisabled()
+
+    await page.goto('/products/ripen-x', { waitUntil: 'domcontentloaded' })
+
+    await expect(page.getByRole('heading', { name: 'RIPEN-X' }).first()).toBeVisible()
+    await expect(page.getByText('Coming soon').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /RIPEN-X is coming soon/i })).toBeDisabled()
+  })
+
   test('support and team pages keep direct trustworthy calls to action', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('heading', { name: 'Contact Catalyx Labs' })).toBeVisible()

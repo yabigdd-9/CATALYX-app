@@ -86,7 +86,7 @@ export const products: Product[] = [
     sku: 'CXL-RIP-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use in late flower only, once the crop has moved out of bloom-push strategy.',
-    inStock: true,
+    inStock: false,
   },
   // Support/Specialist Products
   {
@@ -101,7 +101,7 @@ export const products: Product[] = [
     sku: 'CXL-MIC-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use measured rates when trace balance is needed. More is not better with micros.',
-    inStock: true,
+    inStock: false,
   },
   {
     id: 'trace-x',
@@ -115,7 +115,7 @@ export const products: Product[] = [
     sku: 'CXL-TRC-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use carefully in bloom support windows and avoid stacking trace products without a reason.',
-    inStock: true,
+    inStock: false,
   },
   {
     id: 'flush-x',
@@ -129,7 +129,7 @@ export const products: Product[] = [
     sku: 'CXL-FLS-1L',
     size: '250 mL / 1 L',
     usageNote: 'Use in the flush window or controlled cleanup phases, not as a day-to-day feed product.',
-    inStock: true,
+    inStock: false,
   },
 ]
 

@@ -78,7 +78,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <h2 className="mt-2 text-3xl font-black">{product.name}</h2>
                 <p className="mt-2 text-sm leading-6 text-zinc-300">{product.purpose}. Use in {stageSummary}.</p>
               </div>
-              {storeProduct ? <p className="text-3xl font-black text-[#c8f500]">NZD ${storeProduct.price.toFixed(2)}</p> : null}
+              {storeProduct ? (
+                <div className="text-right">
+                  <p className="text-3xl font-black text-[#c8f500]">NZD ${storeProduct.price.toFixed(2)}</p>
+                  {!storeProduct.inStock ? (
+                    <StatusPill tone="amber">Coming soon</StatusPill>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {storeProduct?.details ? (
