@@ -1,6 +1,9 @@
 import { labNotes, products, protocols, universityLessons } from '@/lib/catalyx'
 import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
 import AdminEditor from '@/components/AdminEditor'
+import AdminFeatureFlags from '@/components/AdminFeatureFlags'
+import CXRewardsAdminPanel from '@/components/CXRewardsAdminPanel'
+import PortalAdminPanel from '@/components/PortalAdminPanel'
 
 const adminAreas = [
   'Products',
@@ -39,6 +42,9 @@ export default function AdminPage() {
         <h2 className="text-2xl font-black">Seeded content summary</h2>
         <p className="mt-3 text-sm text-zinc-400">{products.length} products, {protocols.length} protocols, {universityLessons.length} lessons, and {labNotes.length} lab notes are available in the app data layer.</p>
       </Panel>
+      <AdminFeatureFlags />
+      <PortalAdminPanel />
+      <CXRewardsAdminPanel />
       <div className="mt-6">
         <AdminEditor />
       </div>
