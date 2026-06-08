@@ -1,0 +1,18 @@
+CATALYX LABEL OPTIMISATION - EXECUTIVE SUMMARY
+
+CATALYX can fit feeding guidance and core compliance content across 250mL, 1L and 5L packaging, but the same rear-label strategy should not be used across every size.
+
+The strongest system is:
+- 250mL: compact rear label with mini rate chart, critical warnings, traceability and QR.
+- 1L: single-layer rear label with compact printed feed chart plus QR.
+- 5L: fuller technical rear label with larger printed feed chart, bulk/refill wording and QR.
+
+This keeps the front labels premium and simple, while the rear labels carry the technical load. The front should stay focused on brand identity, product name, purpose, volume and system layer. Dosage logic, compatibility notes, guaranteed analysis, batch information and detailed warnings should sit on the rear label or linked QR page.
+
+Compliance and manufacturer checks are still required before mass print. The guaranteed analysis, final dosage table, ingredient declaration, hazard classification, SDS, QR links, barcode, batch system and market-specific legal wording must be confirmed by the manufacturer/printer before production.
+
+Best launch structure:
+- Use standard single-layer labels at launch.
+- Avoid peel-open labels unless a SKU becomes too hazard-heavy or export-heavy for the available rear space.
+- Use QR as the full feed chart / SDS / batch certificate gateway.
+- Print one actual-size proof on real label material before committing to a full run.

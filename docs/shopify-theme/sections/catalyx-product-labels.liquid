@@ -1,0 +1,202 @@
+{% comment %}
+  Catalyx product label + QR section.
+  Requires product metafields from docs/shopify-product-metafields.csv.
+{% endcomment %}
+
+{% liquid
+  assign app_product_url = product.metafields.custom.app_product_url.value
+  assign qr_feed_chart_url = product.metafields.custom.qr_feed_chart_url.value
+  assign front_label_pdf = product.metafields.custom.front_label_pdf.value
+  assign rear_label_pdf = product.metafields.custom.rear_label_pdf.value
+  assign master_feed_chart_pdf = product.metafields.custom.master_feed_chart_pdf.value
+  assign colour_reference_pdf = product.metafields.custom.colour_reference_pdf.value
+  assign stage_window = product.metafields.custom.stage_window.value
+  assign product_role = product.metafields.custom.product_role.value
+%}
+
+<section class="catalyx-product-labels" data-section-id="{{ section.id }}">
+  <div class="catalyx-product-labels__inner">
+    <div class="catalyx-product-labels__header">
+      <p class="catalyx-product-labels__eyebrow">Catalyx label system</p>
+      <h2 class="catalyx-product-labels__title">{{ product.title }} grow-room references</h2>
+      <p class="catalyx-product-labels__copy">
+        Open the QR feed chart, product education page, locked label PDFs, and v17 feed chart references for this SKU.
+      </p>
+    </div>
+
+    <div class="catalyx-product-labels__meta">
+      {% if product_role != blank %}
+        <div class="catalyx-product-labels__meta-item">
+          <span>Product role</span>
+          <strong>{{ product_role }}</strong>
+        </div>
+      {% endif %}
+      {% if stage_window != blank %}
+        <div class="catalyx-product-labels__meta-item">
+          <span>Stage window</span>
+          <strong>{{ stage_window }}</strong>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="catalyx-product-labels__actions">
+      {% if qr_feed_chart_url != blank %}
+        <a class="catalyx-product-labels__button catalyx-product-labels__button--primary" href="{{ qr_feed_chart_url }}" target="_blank" rel="noreferrer">
+          Open QR feed chart
+        </a>
+      {% endif %}
+      {% if app_product_url != blank %}
+        <a class="catalyx-product-labels__button" href="{{ app_product_url }}" target="_blank" rel="noreferrer">
+          Open Catalyx guide
+        </a>
+      {% endif %}
+      {% if front_label_pdf != blank %}
+        <a class="catalyx-product-labels__button" href="{{ front_label_pdf }}" target="_blank" rel="noreferrer">
+          Front label PDF
+        </a>
+      {% endif %}
+      {% if rear_label_pdf != blank %}
+        <a class="catalyx-product-labels__button" href="{{ rear_label_pdf }}" target="_blank" rel="noreferrer">
+          Rear label PDF
+        </a>
+      {% endif %}
+      {% if master_feed_chart_pdf != blank %}
+        <a class="catalyx-product-labels__button" href="{{ master_feed_chart_pdf }}" target="_blank" rel="noreferrer">
+          Master feed chart
+        </a>
+      {% endif %}
+      {% if colour_reference_pdf != blank %}
+        <a class="catalyx-product-labels__button" href="{{ colour_reference_pdf }}" target="_blank" rel="noreferrer">
+          Colour reference
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .catalyx-product-labels {
+    background: #050707;
+    color: #f8fafc;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .catalyx-product-labels__inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 20px;
+  }
+
+  .catalyx-product-labels__header {
+    max-width: 760px;
+  }
+
+  .catalyx-product-labels__eyebrow {
+    margin: 0 0 12px;
+    color: #c8f500;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .catalyx-product-labels__title {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(30px, 5vw, 56px);
+    font-weight: 950;
+    line-height: 0.98;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .catalyx-product-labels__copy {
+    margin: 18px 0 0;
+    color: #a1a1aa;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .catalyx-product-labels__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .catalyx-product-labels__meta-item {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .catalyx-product-labels__meta-item span {
+    display: block;
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .catalyx-product-labels__meta-item strong {
+    display: block;
+    margin-top: 8px;
+    color: #fff;
+    font-size: 16px;
+  }
+
+  .catalyx-product-labels__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .catalyx-product-labels__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .catalyx-product-labels__button--primary {
+    border-color: #c8f500;
+    background: #c8f500;
+    color: #050707;
+  }
+
+  @media (max-width: 720px) {
+    .catalyx-product-labels__meta {
+      grid-template-columns: 1fr;
+    }
+
+    .catalyx-product-labels__button {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Catalyx product labels",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Catalyx product labels"
+    }
+  ]
+}
+{% endschema %}

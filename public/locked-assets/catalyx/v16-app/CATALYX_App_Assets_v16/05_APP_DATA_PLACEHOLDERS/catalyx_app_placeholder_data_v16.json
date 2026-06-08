@@ -1,0 +1,72 @@
+{
+  "brand": "CATALYX Labs",
+  "version": "v16 colour-corrected",
+  "notice": "Rates are placeholders until manufacturer confirmation.",
+  "products": [
+    {
+      "name": "A-X PRO",
+      "hex": "#7CFF00",
+      "role": "Base Nutrient A"
+    },
+    {
+      "name": "B-X PRO",
+      "hex": "#8BFF3D",
+      "role": "Base Nutrient B"
+    },
+    {
+      "name": "MICRO-X",
+      "hex": "#169DFF",
+      "role": "Micronutrient Support"
+    },
+    {
+      "name": "ROOT-X",
+      "hex": "#00D1C7",
+      "role": "Root Development"
+    },
+    {
+      "name": "VITAL-X",
+      "hex": "#A855F7",
+      "role": "Vitality Support"
+    },
+    {
+      "name": "PK-X",
+      "hex": "#FF7A00",
+      "role": "Bloom Support"
+    },
+    {
+      "name": "TRACE-X",
+      "hex": "#FAC15D",
+      "role": "Trace / Foliar Support"
+    },
+    {
+      "name": "IRON-X",
+      "hex": "#E5E7EB",
+      "role": "Iron Correction"
+    },
+    {
+      "name": "RIPEN-X",
+      "hex": "#FF4444",
+      "role": "Ripener / Finisher"
+    },
+    {
+      "name": "FLUSH-X",
+      "hex": "#00A3FF",
+      "role": "Flush / Cleanse"
+    }
+  ],
+  "stages": [
+    "Seedling",
+    "Vegetative",
+    "Transition",
+    "Early Bloom",
+    "Mid Bloom",
+    "Late Bloom",
+    "Flush"
+  ],
+  "coreRules": [
+    "A-X PRO and B-X PRO run until flush.",
+    "A-X PRO and B-X PRO stop during flush.",
+    "FLUSH-X is final flush only.",
+    "IRON-X is correction support as needed."
+  ]
+}

@@ -1,0 +1,54 @@
+CATALYX APP COPY PACK v16
+
+APP NAME:
+CATALYX Labs
+
+APP TAGLINE:
+Precision nutrients. Every stage. One system.
+
+APP HOME SCREEN HERO:
+Grow with precision.
+
+HOME SCREEN SUBTEXT:
+Track the CATALYX nutrient system from seedling to flush. View product stages, feed charts, mixing order and final guide updates.
+
+PRIMARY BUTTONS:
+View Feed Chart
+Explore Products
+Mixing Order
+Safety + Storage
+
+ONBOARDING SCREEN 1:
+One system. Every stage.
+A-X PRO and B-X PRO form the base feed system through the active growth cycle until flush.
+
+ONBOARDING SCREEN 2:
+Targeted additives.
+MICRO-X, ROOT-X, VITAL-X, PK-X, TRACE-X, IRON-X, RIPEN-X and FLUSH-X support specific growth stages and plant needs.
+
+ONBOARDING SCREEN 3:
+Scan. Mix. Grow.
+Use the app for the full feed guide, product colours, mixing order, batch updates and product instructions.
+
+FEED CHART PAGE TITLE:
+Feed Chart
+
+FEED CHART NOTICE:
+Current dosage rates are placeholders until manufacturer confirmation. Final rates will be updated once approved.
+
+PRODUCT GUIDE PAGE:
+CATALYX products are colour-coded by function so growers can quickly identify each product in the system.
+
+MIXING ORDER PAGE:
+1. Start with clean water.
+2. Add A-X PRO and mix well.
+3. Add B-X PRO and mix well.
+4. Add required additives one at a time.
+5. Check EC/pH.
+6. Feed according to the confirmed guide.
+
+SAFETY PAGE:
+Store sealed in a cool, dark place. Keep out of reach of children and pets. Do not ingest. Avoid contamination of caps or measuring equipment.
+
+DISCLAIMER:
+Final dosage, guaranteed analysis, ingredients, compatibility and safety wording are pending manufacturer confirmation.

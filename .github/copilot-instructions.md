@@ -31,3 +31,7 @@ This is a Next.js e-commerce platform for Catalyx Labs with product catalog, sho
 - Keep components modular and reusable
 - Use Next.js Image optimization for product images
 - Implement proper error handling and validation
+
+## Catalyx Grow OS build spec
+
+For the full Codex build prompt (including Subscription / Catalyx Pro Mode, Stripe, feature flags, and premium grow-assistant requirements), see `docs/codex-prompt.md`.

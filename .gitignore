@@ -49,3 +49,10 @@ output
 .windsurf/
 .zencoder/
 skills/
+
+.vercel
+grow-os-prod/
+test-results/
+tmp-logo-pack/
+tmp-dev.err
+*.code-workspace

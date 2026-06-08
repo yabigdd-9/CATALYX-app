@@ -1,0 +1,73 @@
+{
+  "brand": "CATALYX Labs",
+  "version": "v17 9-SKU no IRON-X",
+  "notice": "IRON-X removed from core launch range. Rates are placeholders until manufacturer confirmation.",
+  "products": [
+    {
+      "name": "A-X PRO",
+      "hex": "#7CFF00",
+      "role": "BASE A",
+      "description": "Core base nutrient Part A"
+    },
+    {
+      "name": "B-X PRO",
+      "hex": "#8BFF3D",
+      "role": "BASE B",
+      "description": "Core base nutrient Part B"
+    },
+    {
+      "name": "MICRO-X",
+      "hex": "#169DFF",
+      "role": "MICRONUTRIENTS",
+      "description": "Micronutrient coverage"
+    },
+    {
+      "name": "ROOT-X",
+      "hex": "#00D1C7",
+      "role": "ROOT DEVELOPMENT",
+      "description": "Root support and early growth"
+    },
+    {
+      "name": "VITAL-X",
+      "hex": "#A855F7",
+      "role": "VITALITY SUPPORT",
+      "description": "Stress and vitality support"
+    },
+    {
+      "name": "PK-X",
+      "hex": "#FF7A00",
+      "role": "BLOOM BOOSTER",
+      "description": "Bloom and bulk support"
+    },
+    {
+      "name": "TRACE-X",
+      "hex": "#FAC15D",
+      "role": "TRACE / FOLIAR",
+      "description": "Trace/mineral support"
+    },
+    {
+      "name": "RIPEN-X",
+      "hex": "#FF4444",
+      "role": "RIPENER",
+      "description": "Late flower finish support"
+    },
+    {
+      "name": "FLUSH-X",
+      "hex": "#00A3FF",
+      "role": "FLUSH / CLEANSE",
+      "description": "Final flush and clean finish"
+    }
+  ],
+  "futureProducts": [
+    {
+      "name": "IRON-X",
+      "role": "Future Correction Series concept"
+    }
+  ],
+  "coreRules": [
+    "A-X PRO and B-X PRO run until flush.",
+    "FLUSH-X is final flush only.",
+    "MICRO-X and TRACE-X cover core micronutrient/trace support.",
+    "IRON-X is not part of the core launch range."
+  ]
+}

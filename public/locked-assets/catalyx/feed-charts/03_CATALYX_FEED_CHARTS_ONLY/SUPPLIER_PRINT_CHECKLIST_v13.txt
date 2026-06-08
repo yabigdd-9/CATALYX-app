@@ -1,0 +1,15 @@
+CATALYX LABEL SUPPLIER CHECKLIST v13
+
+Please verify:
+1. 250mL mini chart readability at actual printed size.
+2. 1L compact chart readability and table contrast.
+3. 5L full chart spacing and bulk label panel fit.
+4. QR scan reliability at final printed size and finish.
+5. No line through front logo.
+6. No black box around the logo.
+7. Guaranteed analysis and final dosage rates confirmed by manufacturer.
+8. Ingredients / derivation / hazard classification confirmed.
+9. Barcode and batch/MFG/EXP fields confirmed.
+10. Matte waterproof/chemical-resistant label material.
+11. No spot UV, texture or metallic finish over QR/barcode areas.
+12. Exact bottle dielines confirmed before mass print.

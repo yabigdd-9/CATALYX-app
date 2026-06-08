@@ -30,9 +30,12 @@ Copy `.env.example` to `.env.local` and fill the values you have. The app still 
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+# Server only — webhooks + /api/admin/* (never NEXT_PUBLIC_)
 SUPABASE_SERVICE_ROLE_KEY=
+STRIPE_MODE=test
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+STRIPE_PRODUCT_PRO=
 STRIPE_PRICE_PRO_MONTHLY=
 STRIPE_PRICE_PRO_YEARLY=
 ```
@@ -43,7 +46,8 @@ STRIPE_PRICE_PRO_YEARLY=
 2. Run `supabase/schema.sql` in the SQL editor.
 3. Run `supabase/seed.sql`.
 4. Enable storage buckets for grow photos and exports.
-5. Add Row Level Security policies appropriate for your auth model before production launch.
+5. Review and apply `supabase/rls-policies.sql` before production launch.
+6. Apply `supabase/indexes.sql` to cover foreign keys flagged by Supabase performance advisors.
 
 Detailed checklist: `docs/supabase-setup.md`.
 
@@ -51,17 +55,31 @@ The schema includes the requested tables: users, subscriptions, user_plan, grows
 
 ## Stripe Setup
 
-1. Create two Stripe recurring prices: Professional Monthly and Professional Yearly.
-2. Add the price IDs to `.env.local`.
-3. Set the checkout success URL to `/dashboard?checkout=success`.
-4. Configure a webhook endpoint at `/api/stripe/webhook`.
-5. Listen for `checkout.session.completed`, subscription create/update/delete, and `invoice.payment_failed`.
+See `docs/stripe-setup.md`. List your Price IDs after setting `STRIPE_SECRET_KEY`:
+
+```bash
+npm run stripe:list-prices
+```
+
+1. Create one Stripe product: Catalyx Professional.
+2. Add recurring prices for NZD 19.99 monthly and NZD 199 yearly.
+3. Add the live Product ID and Price IDs to `.env.local` for production.
+4. Set the checkout success URL to `/dashboard?checkout=success`.
+5. Configure a webhook endpoint at `/api/stripe/webhook`.
+6. Listen for `checkout.session.completed`, subscription create/update/delete, and `invoice.payment_failed`.
+7. Use `/stripe-setup` and `/launch-readiness` to verify the production config before opening traffic.
 
 Without Stripe keys, `/api/stripe/checkout` redirects back to the pricing page in mock checkout mode.
 
 ## PWA And Mobile App Path
 
 The app already includes PWA basics through `public/manifest.json`, `public/sw.js`, and the service worker registration component. Capacitor is configured for the later iOS/Android wrapper.
+
+For the fastest mobile rollout, use the home-screen install path first:
+
+- iPhone: open the deployed site in Safari and use `Add to Home Screen`
+- Android: open the deployed site in Chrome and use `Install app`
+- In-app instructions: `/install`
 
 For mobile packaging, deploy the Next.js app first, then point Capacitor at the production URL:
 
@@ -93,6 +111,7 @@ More detail: `docs/mobile-app-roadmap.md`.
 - `/export` Professional exports
 - `/pricing` subscriptions
 - `/admin` admin control centre
+- `/launch-readiness` production launch checklist
 
 ## Product System
 
@@ -108,6 +127,10 @@ Stage recommendations are encoded exactly:
 - Mid Flower: PK-X, VITAL-X
 - Late Flower: RIPEN-X, TRACE-X
 - Flush: FLUSH-X
+
+## Codex build prompt
+
+Full build specification including Catalyx Pro / Stripe subscription requirements: `docs/codex-prompt.md`.
 
 ## Verification
 
