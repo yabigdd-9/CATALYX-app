@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getSupabaseAdmin, resolveAppUserId } from '@/lib/supabase-admin'
+import { CX_PURCHASE_EARN_RATE } from '@/lib/rewards'
 
 type RewardTier = 'free' | 'monthly' | 'yearly'
 
@@ -30,6 +31,7 @@ type RewardWalletRow = {
   pending_store_credit_cents: number
   lifetime_store_credit_earned_cents: number
   lifetime_store_credit_redeemed_cents: number
+  legacy_rewards_imported_at: string | null
 }
 
 export type BackendRewardWalletSummary = {
@@ -46,6 +48,18 @@ export type BackendRewardWalletSummary = {
 type RewardWalletContext = {
   wallet: RewardWalletRow
   appUserId: string
+}
+
+export type BackendRewardWalletSyncResult = {
+  ok: boolean
+  source: 'supabase' | 'unavailable'
+  wallet: RewardWalletRow | null
+  appUserId: string
+}
+
+export type BackendRewardLegacyImportResult = BackendRewardWalletSyncResult & {
+  migrated: boolean
+  skippedReason?: string
 }
 
 export async function getBackendRewardWallet({
@@ -84,35 +98,174 @@ export async function getBackendRewardWallet({
 export async function syncBackendRewardBalance({
   userCandidate,
   email,
-  balanceCx,
   tier,
 }: {
   userCandidate?: string
   email?: string
-  balanceCx: number
-  tier: RewardTier
-}) {
+  tier?: RewardTier
+}): Promise<BackendRewardWalletSyncResult> {
   const context = await getWalletContext({ userCandidate, email, createIfMissing: true })
-  if (!context) return { ok: false as const, source: 'unavailable' as const }
+  if (!context) return { ok: false, source: 'unavailable', wallet: null, appUserId: '' }
 
   const supabaseAdmin = getSupabaseAdmin()
-  if (!supabaseAdmin) return { ok: false as const, source: 'unavailable' as const }
+  if (!supabaseAdmin) return { ok: false, source: 'unavailable', wallet: null, appUserId: '' }
 
-  const nextBalance = Math.max(0, Math.round(balanceCx))
+  const { data: paidOrders, error: ordersError } = await supabaseAdmin
+    .from('product_orders')
+    .select('id, amount_total, status')
+    .eq('user_id', context.appUserId)
+    .in('status', ['paid', 'complete', 'succeeded'])
+
+  if (ordersError) throw ordersError
+
+  const earnedFromOrders = (paidOrders ?? []).reduce((sum, row) => {
+    const amountTotal = Number(row.amount_total ?? 0)
+    return sum + Math.max(0, Math.round(amountTotal * CX_PURCHASE_EARN_RATE))
+  }, 0)
+
+  const { data: ledgerRows, error: ledgerError } = await supabaseAdmin
+    .from('cx_reward_ledger')
+    .select('points_delta, source, status')
+    .eq('user_id', context.appUserId)
+
+  if (ledgerError) throw ledgerError
+
+  const nonPurchaseLedgerCx = (ledgerRows ?? []).reduce((sum, row) => {
+    const status = String(row.status ?? 'posted')
+    if (status === 'cancelled' || status === 'reversed') return sum
+    if (String(row.source ?? '') === 'purchase') return sum
+    return sum + Number(row.points_delta ?? 0)
+  }, 0)
+
+  const nextBalance = Math.max(0, earnedFromOrders + nonPurchaseLedgerCx)
+  const now = new Date().toISOString()
   const { data, error } = await supabaseAdmin
     .from('cx_reward_wallets')
     .update({
       balance_cx: nextBalance,
-      tier,
-      last_synced_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      tier: tier ?? context.wallet.tier,
+      last_synced_at: now,
+      updated_at: now,
     })
     .eq('id', context.wallet.id)
-    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents')
+    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents, legacy_rewards_imported_at')
     .single()
 
   if (error) throw error
-  return { ok: true as const, source: 'supabase' as const, wallet: mapWalletRow(data), appUserId: context.appUserId }
+  return { ok: true, source: 'supabase', wallet: mapWalletRow(data), appUserId: context.appUserId }
+}
+
+export async function importLegacyRewardSnapshot({
+  userCandidate,
+  email,
+  legacyBalanceCx,
+  legacyStoreCreditBalanceCents,
+  tier,
+}: {
+  userCandidate?: string
+  email?: string
+  legacyBalanceCx: number
+  legacyStoreCreditBalanceCents: number
+  tier?: RewardTier
+}): Promise<BackendRewardLegacyImportResult> {
+  const normalizedBalanceCx = Math.max(0, Math.round(legacyBalanceCx))
+  const normalizedStoreCreditCents = Math.max(0, Math.round(legacyStoreCreditBalanceCents))
+
+  const context = await getWalletContext({ userCandidate, email, createIfMissing: true })
+  if (!context) return { ok: false, source: 'unavailable', wallet: null, appUserId: '', migrated: false }
+
+  const supabaseAdmin = getSupabaseAdmin()
+  if (!supabaseAdmin) return { ok: false, source: 'unavailable', wallet: null, appUserId: '', migrated: false }
+
+  if (context.wallet.legacy_rewards_imported_at) {
+    return { ok: true, source: 'supabase', wallet: context.wallet, appUserId: context.appUserId, migrated: false, skippedReason: 'Legacy rewards already imported.' }
+  }
+
+  const walletAlreadyHasBackendState =
+    context.wallet.balance_cx > 0 ||
+    context.wallet.store_credit_balance_cents > 0 ||
+    context.wallet.pending_store_credit_cents > 0 ||
+    context.wallet.lifetime_store_credit_earned_cents > 0 ||
+    context.wallet.lifetime_store_credit_redeemed_cents > 0
+
+  const [{ data: paidOrders }, { data: redemptions }, { data: ledgerEntries }] = await Promise.all([
+    supabaseAdmin
+      .from('product_orders')
+      .select('id')
+      .eq('user_id', context.appUserId)
+      .in('status', ['paid', 'complete', 'succeeded'])
+      .limit(1),
+    supabaseAdmin
+      .from('cx_reward_redemptions')
+      .select('id')
+      .eq('user_id', context.appUserId)
+      .limit(1),
+    supabaseAdmin
+      .from('cx_reward_ledger')
+      .select('id')
+      .eq('user_id', context.appUserId)
+      .limit(1),
+  ])
+
+  if (walletAlreadyHasBackendState || (paidOrders ?? []).length || (redemptions ?? []).length || (ledgerEntries ?? []).length) {
+    return {
+      ok: true,
+      source: 'supabase',
+      wallet: context.wallet,
+      appUserId: context.appUserId,
+      migrated: false,
+      skippedReason: 'Backend reward activity already exists for this account.',
+    }
+  }
+
+  if (!normalizedBalanceCx && !normalizedStoreCreditCents) {
+    return {
+      ok: true,
+      source: 'supabase',
+      wallet: context.wallet,
+      appUserId: context.appUserId,
+      migrated: false,
+      skippedReason: 'No legacy rewards were provided for import.',
+    }
+  }
+
+  const now = new Date().toISOString()
+
+  if (normalizedBalanceCx || normalizedStoreCreditCents) {
+    await writeLedgerEvent({
+      userId: context.appUserId,
+      walletId: context.wallet.id,
+      eventType: 'legacy_balance_import',
+      source: 'legacy_import',
+      pointsDelta: normalizedBalanceCx,
+      storeCreditDeltaCents: normalizedStoreCreditCents,
+      title: 'Legacy rewards imported',
+      detail: 'Imported from the prior local rewards state during first sign-in.',
+      metadata: {
+        source: 'local_reward_state',
+      },
+    })
+  }
+
+  await supabaseAdmin
+    .from('cx_reward_wallets')
+    .update({
+      legacy_rewards_imported_at: now,
+      last_synced_at: now,
+      updated_at: now,
+    })
+    .eq('id', context.wallet.id)
+
+  const result = await syncBackendRewardBalance({
+    userCandidate: context.appUserId,
+    email,
+    tier,
+  })
+
+  return {
+    ...result,
+    migrated: true,
+  }
 }
 
 export async function issueBackendStoreCreditReward({
@@ -181,7 +334,7 @@ export async function issueBackendStoreCreditReward({
       updated_at: now,
     })
     .eq('id', context.wallet.id)
-    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents')
+    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents, legacy_rewards_imported_at')
     .single()
 
   if (walletError) throw walletError
@@ -286,7 +439,7 @@ export async function reserveBackendStoreCreditForCheckout({
       updated_at: now,
     })
     .eq('id', context.wallet.id)
-    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents')
+    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents, legacy_rewards_imported_at')
     .single()
 
   if (walletError) throw walletError
@@ -518,7 +671,7 @@ async function getWalletContext({
 
   const existing = await supabaseAdmin
     .from('cx_reward_wallets')
-    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents')
+    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents, legacy_rewards_imported_at')
     .eq('user_id', appUserId)
     .maybeSingle()
 
@@ -542,7 +695,7 @@ async function getWalletContext({
       lifetime_store_credit_earned_cents: 0,
       lifetime_store_credit_redeemed_cents: 0,
     })
-    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents')
+    .select('id, user_id, balance_cx, tier, store_credit_balance_cents, pending_store_credit_cents, lifetime_store_credit_earned_cents, lifetime_store_credit_redeemed_cents, legacy_rewards_imported_at')
     .single()
 
   if (error) throw error
@@ -612,6 +765,7 @@ function mapWalletRow(row: Record<string, unknown>): RewardWalletRow {
     pending_store_credit_cents: Number(row.pending_store_credit_cents ?? 0),
     lifetime_store_credit_earned_cents: Number(row.lifetime_store_credit_earned_cents ?? 0),
     lifetime_store_credit_redeemed_cents: Number(row.lifetime_store_credit_redeemed_cents ?? 0),
+    legacy_rewards_imported_at: row.legacy_rewards_imported_at ? String(row.legacy_rewards_imported_at) : null,
   }
 }
 

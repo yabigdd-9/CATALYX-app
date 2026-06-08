@@ -1,26 +1,30 @@
 import { NextResponse } from 'next/server'
 import { syncBackendRewardBalance } from '@/lib/rewards-backend'
+import { planToMembershipTier } from '@/lib/rewards'
 
 export async function POST(request: Request) {
-  let body: { userId?: string; email?: string; balanceCx?: number; tier?: string }
+  let body: { userId?: string; email?: string; tier?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ ok: false, error: 'Invalid reward sync request.' }, { status: 400 })
   }
 
-  const balanceCx = Math.max(0, Math.round(Number(body.balanceCx ?? 0)))
-  const tier = body.tier === 'yearly' || body.tier === 'monthly' ? body.tier : 'free'
+  const tier = planToMembershipTier(body.tier)
 
   try {
     const result = await syncBackendRewardBalance({
       userCandidate: body.userId,
       email: body.email,
-      balanceCx,
       tier,
     })
 
-    return NextResponse.json({ ok: result.ok, source: result.source })
+    return NextResponse.json({
+      ok: result.ok,
+      source: result.source,
+      wallet: result.wallet ?? null,
+      appUserId: result.appUserId ?? '',
+    })
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : 'Reward sync failed.' },

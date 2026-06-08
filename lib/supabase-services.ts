@@ -168,14 +168,47 @@ export async function ensureAppUser({ authUser, force = false }: { authUser?: Su
     full_name: resolvedAuthUser.user_metadata?.name ?? resolvedAuthUser.email.split('@')[0],
   }
 
-  const promise: Promise<AppUserRow | null> = Promise.resolve(supabaseAuth
-    .from('users')
-    .upsert(payload, { onConflict: 'auth_user_id' })
-    .select('id, auth_user_id, email, full_name, subscription_status')
-    .single())
-    .then(({ data, error }) => {
+  const promise: Promise<AppUserRow | null> = (async () => {
+    const selectColumns = 'id, auth_user_id, email, full_name, subscription_status'
+    const { data: byAuthId, error: authLookupError } = await supabaseAuth
+      .from('users')
+      .select(selectColumns)
+      .eq('auth_user_id', resolvedAuthUser.id)
+      .maybeSingle()
+
+    if (authLookupError) throw new Error(authLookupError.message)
+    if (byAuthId) return byAuthId as AppUserRow
+
+    const { data: byEmail, error: emailLookupError } = await supabaseAuth
+      .from('users')
+      .select(selectColumns)
+      .eq('email', resolvedAuthUser.email)
+      .maybeSingle()
+
+    if (emailLookupError) throw new Error(emailLookupError.message)
+
+    if (byEmail?.id) {
+      const { data, error } = await supabaseAuth
+        .from('users')
+        .update(payload)
+        .eq('id', byEmail.id)
+        .select(selectColumns)
+        .single()
+
       if (error) throw new Error(error.message)
-      const row = data as AppUserRow
+      return data as AppUserRow
+    }
+
+    const { data, error } = await supabaseAuth
+      .from('users')
+      .insert(payload)
+      .select(selectColumns)
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data as AppUserRow
+  })()
+    .then((row) => {
       appUserCache = { authUserId: resolvedAuthUser.id, row }
       return row
     })

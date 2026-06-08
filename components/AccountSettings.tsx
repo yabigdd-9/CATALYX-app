@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import AccountOrderHistory from '@/components/AccountOrderHistory'
 import { useAuth } from '@/components/AuthProvider'
 import RewardsExchangePanel from '@/components/RewardsExchangePanel'
@@ -10,11 +10,9 @@ import { Panel, SaveBanner, StatusPill } from '@/components/catalyx-ui'
 import { premiumFeatureSuites } from '@/lib/pro-features'
 import { isProfessionalLikePlan } from '@/lib/rewards'
 
-export default function AccountSettings() {
+export default function AccountSettings({ billingState }: { billingState?: string }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { user, loading, isConfigured, signOut } = useAuth()
-  const billingState = searchParams.get('billing')
   const isPro = isProfessionalLikePlan(user?.plan)
   const planLabel = user?.plan === 'professional_yearly' ? 'professional_yearly' : user?.plan === 'professional_monthly' || user?.plan === 'professional' ? 'professional_monthly' : 'free'
 

@@ -45,6 +45,11 @@ function streakPercent(current: number) {
   return Math.min(100, Math.round(((current % 7) || 7) / 7 * 100))
 }
 
+function rewardValueCents(balanceCx: number, tier: 'free' | 'monthly' | 'yearly') {
+  const multiplier = tier === 'yearly' ? 2 : tier === 'monthly' ? 1.5 : 1
+  return Math.max(0, Math.round(balanceCx * multiplier))
+}
+
 export default function RewardsExchangePanel({
   className = '',
   variant = 'full',
@@ -120,6 +125,12 @@ export default function RewardsExchangePanel({
     [missionActivity, refreshKey, user?.plan, userId]
   )
 
+  const effectiveBalanceCx = backendWallet?.balanceCx ?? snapshot.balanceCx
+  const effectiveTier = backendWallet?.tier ?? snapshot.tier
+  const effectiveCurrentValueCents = rewardValueCents(effectiveBalanceCx, effectiveTier)
+  const effectiveMonthlyValueCents = rewardValueCents(effectiveBalanceCx, 'monthly')
+  const effectiveYearlyValueCents = rewardValueCents(effectiveBalanceCx, 'yearly')
+
   const filteredRewards = useMemo(
     () => snapshot.availableRewards.filter((reward) => reward.category === activeCategory),
     [activeCategory, snapshot.availableRewards]
@@ -130,22 +141,84 @@ export default function RewardsExchangePanel({
 
   useEffect(() => {
     if (!user?.id && !user?.email) return
-    fetch('/api/rewards/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        email: user?.email,
-        balanceCx: snapshot.balanceCx,
-        tier: snapshot.tier,
-      }),
-    }).catch(() => undefined)
-  }, [snapshot.balanceCx, snapshot.tier, user?.email, user?.id, userId])
+    let active = true
+    ;(async () => {
+      if (snapshot.balanceCx > 0 || snapshot.storeCreditBalanceCents > 0) {
+        const migrateResponse = await fetch('/api/rewards/migrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            email: user?.email,
+            tier: user?.plan,
+            legacyBalanceCx: snapshot.balanceCx,
+            legacyStoreCreditBalanceCents: snapshot.storeCreditBalanceCents,
+          }),
+        })
+
+        if (active && migrateResponse.ok) {
+          const payload = (await migrateResponse.json()) as {
+            wallet?: {
+              balanceCx?: number
+              tier?: 'free' | 'monthly' | 'yearly'
+              storeCreditBalanceCents?: number
+              pendingStoreCreditCents?: number
+            } | null
+          }
+          if (payload?.wallet) {
+            setBackendWallet({
+              balanceCx: Number(payload.wallet.balanceCx ?? 0),
+              tier: payload.wallet.tier === 'yearly' || payload.wallet.tier === 'monthly' ? payload.wallet.tier : 'free',
+              storeCreditBalanceCents: Number(payload.wallet.storeCreditBalanceCents ?? 0),
+              pendingStoreCreditCents: Number(payload.wallet.pendingStoreCreditCents ?? 0),
+            })
+          }
+        }
+      }
+
+      const syncResponse = await fetch('/api/rewards/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          email: user?.email,
+          tier: user?.plan,
+        }),
+      })
+
+      if (!syncResponse.ok) return
+
+      const payload = (await syncResponse.json()) as {
+        wallet?: {
+          balanceCx?: number
+          tier?: 'free' | 'monthly' | 'yearly'
+          storeCreditBalanceCents?: number
+          pendingStoreCreditCents?: number
+        } | null
+      }
+
+      if (!active || !payload?.wallet) return
+      setBackendWallet({
+        balanceCx: Number(payload.wallet.balanceCx ?? 0),
+        tier: payload.wallet.tier === 'yearly' || payload.wallet.tier === 'monthly' ? payload.wallet.tier : 'free',
+        storeCreditBalanceCents: Number(payload.wallet.storeCreditBalanceCents ?? 0),
+        pendingStoreCreditCents: Number(payload.wallet.pendingStoreCreditCents ?? 0),
+      })
+    })().catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [snapshot.balanceCx, snapshot.storeCreditBalanceCents, user?.email, user?.id, user?.plan, userId])
 
   async function handleRedeem(rewardId: string) {
     const reward = snapshot.availableRewards.find((entry) => entry.id === rewardId)
     if (!reward) {
       setBanner({ status: 'error', message: 'Reward not found.' })
+      return
+    }
+
+    if (reward.kind === 'store_credit' && !user?.id) {
+      setBanner({ status: 'error', message: 'Sign in to redeem store credit.' })
       return
     }
 
@@ -174,6 +247,8 @@ export default function RewardsExchangePanel({
             pendingStoreCreditCents: Number(payload.wallet.pendingStoreCreditCents ?? 0),
           })
         }
+        setBanner({ status: 'saved', message: `${reward.title} converted to store credit.` })
+        return
       } catch {
         setBanner({ status: 'error', message: 'Could not sync the reward wallet to the backend.' })
         return
@@ -228,12 +303,12 @@ export default function RewardsExchangePanel({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">CATALYX CX Rewards</p>
             <h2 className="mt-2 text-2xl font-black text-white">Earn. Grow. Unlock.</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-              {snapshot.balanceCx} CX is worth {formatMoneyFromCents(snapshot.currentValueCents)} now, or {formatMoneyFromCents(snapshot.yearlyValueCents)} on Annual.
+              {effectiveBalanceCx} CX is worth {formatMoneyFromCents(effectiveCurrentValueCents)} now, or {formatMoneyFromCents(effectiveYearlyValueCents)} on Annual.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <StatusPill tone="lime">{snapshot.balanceCx} CX</StatusPill>
-            <StatusPill tone="blue">{membershipTierLabel(snapshot.tier)}</StatusPill>
+            <StatusPill tone="lime">{effectiveBalanceCx} CX</StatusPill>
+            <StatusPill tone="blue">{membershipTierLabel(effectiveTier)}</StatusPill>
           </div>
         </div>
         <SaveBanner status={banner.status} message={banner.message} />
@@ -323,15 +398,15 @@ export default function RewardsExchangePanel({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <StatusPill tone="lime">{snapshot.balanceCx} CX</StatusPill>
-              <StatusPill tone="blue">{membershipTierLabel(snapshot.tier)}</StatusPill>
-              <StatusPill tone="amber">Annual best value</StatusPill>
-            </div>
+            <StatusPill tone="lime">{effectiveBalanceCx} CX</StatusPill>
+            <StatusPill tone="blue">{membershipTierLabel(effectiveTier)}</StatusPill>
+            <StatusPill tone="amber">Annual best value</StatusPill>
           </div>
+        </div>
           <div className="mt-6 grid gap-3 lg:grid-cols-4">
-            <MetricTile title="Current balance" value={`${snapshot.balanceCx} CX`} body={`Current value: ${formatMoneyFromCents(snapshot.currentValueCents)}`} accent="lime" />
-            <MetricTile title="Monthly value" value={formatMoneyFromCents(snapshot.monthlyValueCents)} body="100 CX = $1.50 on Monthly." accent="blue" />
-            <MetricTile title="Annual value" value={formatMoneyFromCents(snapshot.yearlyValueCents)} body="100 CX = $2.00 on Annual. Best Value." accent="amber" />
+            <MetricTile title="Current balance" value={`${effectiveBalanceCx} CX`} body={`Current value: ${formatMoneyFromCents(effectiveCurrentValueCents)}`} accent="lime" />
+            <MetricTile title="Monthly value" value={formatMoneyFromCents(effectiveMonthlyValueCents)} body="100 CX = $1.50 on Monthly." accent="blue" />
+            <MetricTile title="Annual value" value={formatMoneyFromCents(effectiveYearlyValueCents)} body="100 CX = $2.00 on Annual. Best Value." accent="amber" />
             <MetricTile title="Store credit wallet" value={formatMoneyFromCents(availableStoreCreditCents)} body={user?.id ? 'Applied, reserved, and restored through backend checkout events.' : 'Sign in to make store credit usable at checkout.'} accent="violet" />
           </div>
         </div>
@@ -506,7 +581,7 @@ export default function RewardsExchangePanel({
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredRewards.map((reward) => {
             const owned = snapshot.ownedRewards.find((item) => item.reward.id === reward.id)?.quantity ?? 0
-            const lockedByBalance = snapshot.balanceCx < reward.costCx
+            const lockedByBalance = effectiveBalanceCx < reward.costCx
             return (
               <div key={reward.id} className="rounded-lg border border-white/10 bg-black/30 p-4" style={{ boxShadow: `inset 0 1px 0 ${reward.accent}33` }}>
                 <div className="flex items-start justify-between gap-3">
@@ -524,7 +599,7 @@ export default function RewardsExchangePanel({
                 </div>
                 {reward.category === 'store-credit' ? (
                   <p className="mt-4 text-sm text-zinc-300">
-                    Current tier value: {formatMoneyFromCents(snapshot.tier === 'free' ? Math.round(reward.costCx) : snapshot.tier === 'monthly' ? Math.round(reward.costCx * 1.5) : reward.costCx * 2)}
+                    Current tier value: {formatMoneyFromCents(rewardValueCents(reward.costCx, effectiveTier))}
                   </p>
                 ) : null}
                 <button
@@ -537,7 +612,7 @@ export default function RewardsExchangePanel({
                       : 'bg-[#c8f500] text-black hover:bg-[#e0ff33]'
                   }`}
                 >
-                  {lockedByBalance ? `Need ${reward.costCx - snapshot.balanceCx} more CX` : reward.category === 'store-credit' ? 'Convert CX' : 'Redeem reward'}
+                  {lockedByBalance ? `Need ${reward.costCx - effectiveBalanceCx} more CX` : reward.category === 'store-credit' ? 'Convert CX' : 'Redeem reward'}
                 </button>
               </div>
             )
@@ -590,7 +665,7 @@ export default function RewardsExchangePanel({
             <div className="rounded-md border border-white/10 bg-black/30 p-4">
               <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Upgrade pressure</p>
               <p className="mt-2 text-sm leading-6 text-zinc-300">
-                {snapshot.balanceCx} CX is worth {formatMoneyFromCents(snapshot.currentValueCents)} now, or {formatMoneyFromCents(snapshot.yearlyValueCents)} on Annual.
+                {effectiveBalanceCx} CX is worth {formatMoneyFromCents(effectiveCurrentValueCents)} now, or {formatMoneyFromCents(effectiveYearlyValueCents)} on Annual.
               </p>
             </div>
           </div>

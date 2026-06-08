@@ -1,0 +1,30 @@
+-- Recommended indexes for foreign keys reported by Supabase performance advisors.
+
+create index if not exists idx_subscriptions_user_id on subscriptions(user_id);
+create index if not exists idx_grows_user_id on grows(user_id);
+create index if not exists idx_product_orders_user_id on product_orders(user_id);
+create index if not exists idx_product_orders_user_status on product_orders(user_id, status);
+create index if not exists idx_cx_reward_ledger_user_id on cx_reward_ledger(user_id);
+create index if not exists idx_cx_reward_ledger_user_source on cx_reward_ledger(user_id, source);
+create index if not exists idx_cx_reward_redemptions_user_id on cx_reward_redemptions(user_id);
+create index if not exists idx_grow_rooms_user_id on grow_rooms(user_id);
+create index if not exists idx_grow_tents_user_id on grow_tents(user_id);
+create index if not exists idx_grow_tents_room_id on grow_tents(room_id);
+create index if not exists idx_plants_grow_id on plants(grow_id);
+create index if not exists idx_plants_tent_id on plants(tent_id);
+create index if not exists idx_daily_checkins_grow_id on daily_checkins(grow_id);
+create index if not exists idx_feed_logs_grow_id on feed_logs(grow_id);
+create index if not exists idx_photos_grow_id on photos(grow_id);
+create index if not exists idx_journal_entries_grow_id on journal_entries(grow_id);
+create index if not exists idx_product_inventory_user_id on product_inventory(user_id);
+create index if not exists idx_product_inventory_product_id on product_inventory(product_id);
+create index if not exists idx_feed_chart_product_id on feed_chart(product_id);
+create index if not exists idx_tips_product_id on tips(product_id);
+create index if not exists idx_reminders_user_id on reminders(user_id);
+create index if not exists idx_reminders_grow_id on reminders(grow_id);
+create index if not exists idx_grow_scores_grow_id on grow_scores(grow_id);
+create index if not exists idx_weekly_reviews_grow_id on weekly_reviews(grow_id);
+create index if not exists idx_recommendations_grow_id on recommendations(grow_id);
+create index if not exists idx_warnings_grow_id on warnings(grow_id);
+create index if not exists idx_environment_logs_grow_id on environment_logs(grow_id);
+create index if not exists idx_grow_exports_grow_id on grow_exports(grow_id);

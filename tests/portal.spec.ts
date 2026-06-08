@@ -271,7 +271,7 @@ test.describe('customer portal', () => {
 
     await page.goto('/portal/documents', { waitUntil: 'domcontentloaded' })
     await expect(page.getByText('Catalyx master feed chart')).toBeVisible()
-    await expect(page.getByText('Product guide')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Product guide' })).toBeVisible()
 
     await page.goto('/portal/notifications', { waitUntil: 'domcontentloaded' })
     await expect(page.getByText('Support replied')).toBeVisible()

@@ -2,12 +2,18 @@ import { Suspense } from 'react'
 import AccountSettings from '@/components/AccountSettings'
 import { PageHeader, Panel, ShellSection } from '@/components/catalyx-ui'
 
-export default function AccountPage() {
+export default function AccountPage({
+  searchParams,
+}: {
+  searchParams?: { billing?: string }
+}) {
+  const billingState = searchParams?.billing
+
   return (
     <ShellSection>
       <PageHeader title="Account settings" copy="Manage sign-in state, billing actions, account access, and your Catalyx product order history." />
       <Suspense fallback={<AccountPageFallback />}>
-        <AccountSettings />
+        <AccountSettings billingState={billingState} />
       </Suspense>
     </ShellSection>
   )

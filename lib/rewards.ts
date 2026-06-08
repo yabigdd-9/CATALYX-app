@@ -281,6 +281,8 @@ const DEFAULT_CONFIG: CxRewardConfig = {
   yearlySubscriberExtraWheelWeight: 1.18,
 }
 
+export const CX_PURCHASE_EARN_RATE = DEFAULT_CONFIG.purchaseEarnRate
+
 const DEFAULT_WHEEL_SLICES: CxWheelSlice[] = [
   { id: 'wheel-10', label: '10 CX', rewardType: 'cx', cxAmount: 10, baseWeight: 34 },
   { id: 'wheel-25', label: '25 CX', rewardType: 'cx', cxAmount: 25, baseWeight: 25 },

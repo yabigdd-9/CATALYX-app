@@ -5,6 +5,7 @@ import {
   finalizeBackendStoreCreditCheckout,
   releaseBackendStoreCreditCheckout,
   restoreBackendStoreCreditFromRefund,
+  syncBackendRewardBalance,
 } from '@/lib/rewards-backend'
 import { getSupabaseAdmin, resolveAppUserId } from '@/lib/supabase-admin'
 import { stripe, stripeConfig } from '@/lib/stripe'
@@ -113,6 +114,13 @@ async function persistProductOrder(
         reward_credit_status: Number(metadata.store_credit_applied_cents ?? 0) > 0 ? 'applied' : 'none',
       })
       .eq('stripe_checkout_session_id', readStripeId(object.id))
+
+    if (appUserId) {
+      await syncBackendRewardBalance({
+        userCandidate: appUserId,
+        email,
+      })
+    }
   }
 
   if (type === 'checkout.session.async_payment_failed' || type === 'checkout.session.expired') {
@@ -279,7 +287,7 @@ async function persistRefundEvent(
 
   const { data: order } = await supabaseAdmin
     .from('product_orders')
-    .select('id, refunded_amount_cents')
+    .select('id, refunded_amount_cents, user_id, customer_email')
     .eq('stripe_payment_intent_id', paymentIntentId)
     .maybeSingle()
 
@@ -299,6 +307,13 @@ async function persistRefundEvent(
     stripePaymentIntentId: paymentIntentId,
     refundAmountCents,
   })
+
+  if (order?.user_id) {
+    await syncBackendRewardBalance({
+      userCandidate: String(order.user_id),
+      email: String(order.customer_email ?? ''),
+    })
+  }
 }
 
 function planFromMetadataOrPrice(metadataPlan: string | undefined, priceId: string) {
