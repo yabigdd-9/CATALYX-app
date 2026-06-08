@@ -1,36 +1,76 @@
 'use client'
 
-import { useState } from 'react'
-import { PageHeader, Panel, ShellSection } from '@/components/catalyx-ui'
+import Link from 'next/link'
+import { PageHeader, Panel, ShellSection, StatusPill } from '@/components/catalyx-ui'
+
+const contacts = [
+  {
+    title: 'Product and wholesale',
+    email: 'dion@catalyxlabs.co.nz',
+    body: 'Use this route for product questions, wholesale interest, launch planning, and range structure.',
+  },
+  {
+    title: 'App and technical support',
+    email: 'robert@catalyxlabs.co.nz',
+    body: 'Use this route for Grow OS issues, account problems, checkout questions, and site feedback.',
+  },
+  {
+    title: 'Product operations',
+    email: 'daena@catalyxlabs.co.nz',
+    body: 'Use this route for product information requests, rollout coordination, and customer-facing process questions.',
+  },
+]
 
 export default function ContactPage() {
-  const [sent, setSent] = useState(false)
-
   return (
     <ShellSection>
-      <PageHeader title="Contact Catalyx Labs" copy="Support, product education, professional cultivation questions, wholesale interest, and app feedback." />
-      <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <Panel className="p-5">
-          <h2 className="text-2xl font-black">Newsletter signup</h2>
-          <p className="mt-3 text-sm leading-6 text-zinc-400">Get product education previews, protocol updates, and Catalyx University notes.</p>
-          <form className="mt-5 grid gap-3" onSubmit={(event) => { event.preventDefault(); setSent(true) }}>
-            <input className="rounded-md border border-white/10 bg-black px-3 py-3 text-white outline-none focus:border-[#c8f500]" placeholder="Email address" type="email" required />
-            <button className="rounded-md bg-[#c8f500] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-black">Subscribe</button>
-          </form>
-        </Panel>
-        <Panel className="p-5">
-          <h2 className="text-2xl font-black">Send a message</h2>
-          <form className="mt-5 grid gap-3" onSubmit={(event) => { event.preventDefault(); setSent(true) }}>
-            {['Name', 'Email', 'Subject'].map((field) => (
-              <input key={field} className="rounded-md border border-white/10 bg-black px-3 py-3 text-white outline-none focus:border-[#c8f500]" placeholder={field} type={field === 'Email' ? 'email' : 'text'} required />
-            ))}
-            <textarea className="min-h-36 rounded-md border border-white/10 bg-black px-3 py-3 text-white outline-none focus:border-[#c8f500]" placeholder="Message" required />
-            <button className="rounded-md bg-[#c8f500] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-black">Send message</button>
-            {sent ? <p className="text-sm text-[#c8f500]">Message captured in mock mode. Connect Supabase or an email service to persist submissions.</p> : null}
-          </form>
-        </Panel>
+      <PageHeader
+        title="Contact Catalyx Labs"
+        copy="Choose the right direct contact path below for product, app, or operations questions."
+      />
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {contacts.map((contact) => (
+          <Panel key={contact.email} className="flex h-full flex-col p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c8f500]">Direct contact</p>
+                <h2 className="mt-3 text-2xl font-black text-white">{contact.title}</h2>
+              </div>
+              <StatusPill tone="blue">Email</StatusPill>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-zinc-300">{contact.body}</p>
+            <div className="mt-auto pt-6">
+              <a
+                href={`mailto:${contact.email}`}
+                className="inline-flex w-full items-center justify-center rounded-md bg-[#c8f500] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-black"
+              >
+                {contact.email}
+              </a>
+            </div>
+          </Panel>
+        ))}
       </div>
+
+      <Panel className="mt-6 p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#33d9ff]">Need more context first?</p>
+            <h2 className="mt-3 text-3xl font-black uppercase tracking-[0.04em] text-white">Review the team, kits, or product guide before reaching out.</h2>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href="/team" className="rounded-md border border-white/15 px-5 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-white">
+              Meet the team
+            </Link>
+            <Link href="/preorder" className="rounded-md border border-white/15 px-5 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-white">
+              Compare kits
+            </Link>
+            <Link href="/product-guide" className="rounded-md border border-white/15 px-5 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-white">
+              Open guide
+            </Link>
+          </div>
+        </div>
+      </Panel>
     </ShellSection>
   )
 }
-

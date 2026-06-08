@@ -14,12 +14,16 @@ export function ShellSection({
 export function Panel({
   children,
   className = '',
+  ...props
 }: {
   children: React.ReactNode
   className?: string
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`rounded-lg border border-white/10 bg-[#0b0f10]/86 shadow-2xl shadow-black/25 backdrop-blur ${className}`}>
+    <div
+      {...props}
+      className={`rounded-lg border border-white/10 bg-[#0b0f10]/86 shadow-2xl shadow-black/25 backdrop-blur ${className}`}
+    >
       {children}
     </div>
   )
@@ -29,7 +33,7 @@ export function MetricCard({
   label,
   value,
   note,
-  accent = '#c8f500',
+  accent = '#7cff00',
 }: {
   label: string
   value: number | string
@@ -65,13 +69,13 @@ export function PrimaryActionPanel({
   meta?: string
 }) {
   return (
-    <Panel className="relative overflow-hidden border-[#c8f500]/35 p-5">
-      <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_20%,rgba(200,245,0,0.14),transparent_42%)]" />
+    <Panel className="relative overflow-hidden border-[#7cff00]/35 p-5">
+      <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_70%_20%,rgba(124,255,0,0.14),transparent_42%)]" />
       <div className="relative">
-        {meta ? <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c8f500]">{meta}</p> : null}
+        {meta ? <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7cff00]">{meta}</p> : null}
         <h2 className="mt-2 text-3xl font-black leading-tight text-white">{title}</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">{body}</p>
-        <Link href={href} className="mt-5 inline-flex rounded-md bg-[#c8f500] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-black shadow-lg shadow-[#c8f500]/15">
+        <Link href={href} className="mt-5 inline-flex rounded-md bg-[#7cff00] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-black shadow-lg shadow-[#7cff00]/15">
           {action}
         </Link>
       </div>
@@ -97,7 +101,7 @@ export function RecommendationCard({
   const isWarning = severity === 'warning'
 
   return (
-    <Panel className={`p-5 ${isWarning ? 'border-[#ffd23f]/25' : ''}`}>
+    <Panel className={`p-5 ${isWarning ? 'border-[#ff7a00]/25' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{isWarning ? 'Prevent mistake' : 'Recommended action'}</p>
@@ -113,7 +117,7 @@ export function RecommendationCard({
         </div>
       ) : null}
       <details className="mt-3 rounded-md border border-white/10 bg-black/20 p-3">
-        <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.16em] text-[#c8f500]">Why this matters</summary>
+        <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.16em] text-[#7cff00]">Why this matters</summary>
         <p className="mt-2 text-sm leading-6 text-zinc-500">{why}</p>
       </details>
     </Panel>
@@ -148,9 +152,9 @@ export function SaveBanner({
   if (status === 'idle') return null
 
   const styles = {
-    saving: 'border-[#33d9ff]/30 bg-[#33d9ff]/10 text-[#8decff]',
-    saved: 'border-[#c8f500]/30 bg-[#c8f500]/10 text-[#d9ff34]',
-    error: 'border-[#ff3b45]/30 bg-[#ff3b45]/10 text-[#ff9ca2]',
+    saving: 'border-[#169dff]/30 bg-[#169dff]/10 text-[#7fc8ff]',
+    saved: 'border-[#7cff00]/30 bg-[#7cff00]/10 text-[#b8ff6c]',
+    error: 'border-[#ff4444]/30 bg-[#ff4444]/10 text-[#ff9a9a]',
   }
 
   return (
@@ -210,17 +214,17 @@ export function StatusPill({
   tone?: 'lime' | 'blue' | 'amber' | 'red' | 'violet'
 }) {
   const tones = {
-    lime: 'border-[#c8f500]/40 bg-[#c8f500]/10 text-[#d9ff34]',
-    blue: 'border-[#33d9ff]/40 bg-[#33d9ff]/10 text-[#8decff]',
-    amber: 'border-[#ffd23f]/40 bg-[#ffd23f]/10 text-[#ffe47c]',
-    red: 'border-[#ff3b45]/40 bg-[#ff3b45]/10 text-[#ff8b92]',
-    violet: 'border-[#9a5cff]/40 bg-[#9a5cff]/10 text-[#c8adff]',
+    lime: 'border-[#7cff00]/40 bg-[#7cff00]/10 text-[#b8ff6c]',
+    blue: 'border-[#169dff]/40 bg-[#169dff]/10 text-[#7fc8ff]',
+    amber: 'border-[#ff7a00]/40 bg-[#ff7a00]/10 text-[#ffb266]',
+    red: 'border-[#ff4444]/40 bg-[#ff4444]/10 text-[#ff9a9a]',
+    violet: 'border-[#a855f7]/40 bg-[#a855f7]/10 text-[#d1a9ff]',
   }
 
   return <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>{children}</span>
 }
 
-export function MiniGraph({ color = '#c8f500' }: { color?: string }) {
+export function MiniGraph({ color = '#7cff00' }: { color?: string }) {
   return (
     <div className="flex h-14 items-end gap-1">
       {[34, 52, 44, 62, 58, 70, 66].map((height, index) => (
