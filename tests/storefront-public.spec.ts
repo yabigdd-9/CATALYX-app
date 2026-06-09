@@ -70,7 +70,7 @@ test.describe('public storefront launch surfaces', () => {
   test('additive and ripening products expose the correct checkout state', async ({ page }) => {
     await page.goto('/collections/additives', { waitUntil: 'domcontentloaded' })
 
-    await expect(page.getByRole('button', { name: /ROOT-X is coming soon/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /Add ROOT-X to cart/i })).toBeEnabled()
     await expect(page.getByRole('button', { name: /VITAL-X is coming soon/i })).toBeDisabled()
     await expect(page.getByRole('button', { name: /Add PK-X to cart/i })).toBeEnabled()
 

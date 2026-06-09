@@ -44,7 +44,7 @@ export const products: Product[] = [
     sku: 'CXL-ROT-1L',
     size: '250 mL / 1 L',
     usageNote: 'Best used early in the cycle and around transplant or establishment windows.',
-    inStock: false,
+    inStock: true,
   },
   {
     id: 'vital-x',
