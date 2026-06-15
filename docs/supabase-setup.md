@@ -41,7 +41,7 @@ This creates the full planned ecosystem schema while Phase 1 uses:
 In Supabase Auth:
 
 - Enable email/password signups.
-- For local testing, set Site URL to `http://127.0.0.1:3004` or your active dev port.
+- For local testing, set Site URL to `http://localhost:3000` or your active dev port.
 - Add deployed production URL later.
 
 ## 4. Storage Buckets
