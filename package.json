@@ -3,9 +3,47 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node build.js",
-    "start": "node build.js"
+    "dev": "next dev",
+    "build": "next build",
+    "build:web": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "stripe:list-prices": "node scripts/stripe-list-prices.mjs",
+    "cap:init": "npx cap init \"Catalyx Labs Grow OS\" catalyx --web-dir=out --npm-client=npm",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:copy": "npx cap copy",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:build": "npm run build:web && npx cap sync"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@capacitor/core": "^6.2.1",
+    "@supabase/supabase-js": "^2.105.4",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "next": "^16.2.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "server-only": "^0.0.1",
+    "stripe": "^22.1.1",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/ios": "^6.2.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
 }
