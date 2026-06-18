@@ -1,28 +1,22 @@
 import { NextResponse } from 'next/server'
 import { syncBackendRewardBalance } from '@/lib/rewards-backend'
-import { planToMembershipTier } from '@/lib/rewards'
+import { mapRewardWallet, requireRewardUser } from '@/lib/rewards-auth'
 
 export async function POST(request: Request) {
-  let body: { userId?: string; email?: string; tier?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ ok: false, error: 'Invalid reward sync request.' }, { status: 400 })
-  }
-
-  const tier = planToMembershipTier(body.tier)
+  const guard = await requireRewardUser(request)
+  if (guard.response || !guard.appUser || !guard.authUser) return guard.response
 
   try {
     const result = await syncBackendRewardBalance({
-      userCandidate: body.userId,
-      email: body.email,
-      tier,
+      userCandidate: String(guard.appUser.id),
+      email: guard.authUser.email ?? guard.appUser.email ?? '',
+      tier: guard.tier,
     })
 
     return NextResponse.json({
       ok: result.ok,
       source: result.source,
-      wallet: result.wallet ?? null,
+      wallet: mapRewardWallet(result.wallet),
       appUserId: result.appUserId ?? '',
     })
   } catch (error) {
