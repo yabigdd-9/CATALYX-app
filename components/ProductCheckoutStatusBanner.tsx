@@ -24,6 +24,45 @@ type CheckoutStatusResponse = {
   error?: string
 }
 
+type ProductCheckoutBanner = {
+  tone: 'lime' | 'blue' | 'amber' | 'red' | 'violet'
+  label: string
+  title: string
+  body: string
+  help: string | null
+  primaryHref: string
+  primaryLabel: string
+  secondaryHref: string
+  secondaryLabel: string
+  showSessionId: boolean
+  borderClass: string
+}
+
+type ProductCheckoutBannerInput = Omit<ProductCheckoutBanner, 'borderClass' | 'help' | 'showSessionId'> &
+  Partial<Pick<ProductCheckoutBanner, 'borderClass' | 'help' | 'showSessionId'>>
+
+const BANNER_BORDER_CLASS: Record<ProductCheckoutBanner['tone'], string> = {
+  amber: 'border-[#ffd23f]/35',
+  blue: 'border-[#33d9ff]/35',
+  lime: 'border-[#c8f500]/35',
+  red: 'border-[#ff3b45]/35',
+  violet: 'border-[#9a5cff]/35',
+}
+
+function productCheckoutBanner({
+  borderClass,
+  help = null,
+  showSessionId = false,
+  ...banner
+}: ProductCheckoutBannerInput): ProductCheckoutBanner {
+  return {
+    ...banner,
+    borderClass: borderClass ?? BANNER_BORDER_CLASS[banner.tone],
+    help,
+    showSessionId,
+  }
+}
+
 export default function ProductCheckoutStatusBanner({
   checkoutStatus,
   sessionId,
@@ -211,8 +250,8 @@ function resolveBanner({
   verificationMessage: string
 }) {
   if (mockCheckout) {
-    return {
-      tone: 'violet' as const,
+    return productCheckoutBanner({
+      tone: 'violet',
       label: 'Mock checkout',
       title: 'This was a local checkout preview.',
       body: 'Stripe is not configured in this environment, so the cart returned from mock mode and no payment was taken.',
@@ -221,30 +260,25 @@ function resolveBanner({
       primaryLabel: 'Review cart',
       secondaryHref: '/products',
       secondaryLabel: 'Continue shopping',
-      showSessionId: false,
-      borderClass: 'border-[#9a5cff]/35',
-    }
+    })
   }
 
   if (checkoutStatus === 'cancelled') {
-    return {
-      tone: 'amber' as const,
+    return productCheckoutBanner({
+      tone: 'amber',
       label: 'Checkout cancelled',
       title: 'Your cart is still ready.',
       body: 'Stripe Checkout was closed before payment completed. Review the order summary below and reopen checkout when you are ready.',
-      help: null,
       primaryHref: '#cart-summary',
       primaryLabel: 'Review cart',
       secondaryHref: '/products',
       secondaryLabel: 'Continue shopping',
-      showSessionId: false,
-      borderClass: 'border-[#ffd23f]/35',
-    }
+    })
   }
 
   if (checkoutStatus === 'configuration-error') {
-    return {
-      tone: 'red' as const,
+    return productCheckoutBanner({
+      tone: 'red',
       label: 'Stripe setup needed',
       title: 'Product checkout could not start.',
       body: 'The cart returned before Stripe Checkout opened because product checkout is not fully configured yet.',
@@ -253,64 +287,53 @@ function resolveBanner({
       primaryLabel: 'Open Stripe setup',
       secondaryHref: '#cart-summary',
       secondaryLabel: 'Review cart',
-      showSessionId: false,
-      borderClass: 'border-[#ff3b45]/35',
-    }
+    })
   }
 
   if (checkoutStatus === 'invalid') {
-    return {
-      tone: 'red' as const,
+    return productCheckoutBanner({
+      tone: 'red',
       label: 'Cart needs review',
       title: 'One or more items can no longer be checked out.',
       body: 'Remove unavailable products or fix quantities before you try Stripe Checkout again.',
-      help: null,
       primaryHref: '#cart-summary',
       primaryLabel: 'Review cart',
       secondaryHref: '/products',
       secondaryLabel: 'Continue shopping',
-      showSessionId: false,
-      borderClass: 'border-[#ff3b45]/35',
-    }
+    })
   }
 
   if (checkoutStatus === 'empty') {
-    return {
-      tone: 'amber' as const,
+    return productCheckoutBanner({
+      tone: 'amber',
       label: 'Cart empty',
       title: 'Add a product before checkout.',
       body: 'Stripe Checkout cannot open until there is at least one current Catalyx product in the cart.',
-      help: null,
       primaryHref: '/products',
       primaryLabel: 'Browse products',
       secondaryHref: '#cart-summary',
       secondaryLabel: 'Review cart',
-      showSessionId: false,
-      borderClass: 'border-[#ffd23f]/35',
-    }
+    })
   }
 
   if (checkoutStatus === 'unavailable') {
-    return {
-      tone: 'red' as const,
+    return productCheckoutBanner({
+      tone: 'red',
       label: 'Checkout unavailable',
       title: 'Stripe did not return a checkout link.',
       body: 'The cart stayed local and no payment was started. Review the order below, then retry after Stripe is available again.',
-      help: null,
       primaryHref: '#cart-summary',
       primaryLabel: 'Review cart',
       secondaryHref: '/products',
       secondaryLabel: 'Continue shopping',
-      showSessionId: false,
-      borderClass: 'border-[#ff3b45]/35',
-    }
+    })
   }
 
   if (checkoutStatus !== 'success') return null
 
   if (verificationState === 'confirmed') {
-    return {
-      tone: 'lime' as const,
+    return productCheckoutBanner({
+      tone: 'lime',
       label: 'Order confirmed',
       title: 'Your Catalyx order is confirmed.',
       body: verificationMessage,
@@ -320,13 +343,12 @@ function resolveBanner({
       secondaryHref: '/dashboard',
       secondaryLabel: 'Open dashboard',
       showSessionId: Boolean(sessionId),
-      borderClass: 'border-[#c8f500]/35',
-    }
+    })
   }
 
   if (verificationState === 'pending') {
-    return {
-      tone: 'amber' as const,
+    return productCheckoutBanner({
+      tone: 'amber',
       label: 'Payment pending',
       title: 'Stripe checkout returned, but payment is still processing.',
       body: verificationMessage,
@@ -336,13 +358,12 @@ function resolveBanner({
       secondaryHref: '#cart-summary',
       secondaryLabel: 'View order summary',
       showSessionId: Boolean(sessionId),
-      borderClass: 'border-[#ffd23f]/35',
-    }
+    })
   }
 
   if (verificationState === 'verification_error') {
-    return {
-      tone: 'red' as const,
+    return productCheckoutBanner({
+      tone: 'red',
       label: 'Verification needed',
       title: 'We could not verify this order yet.',
       body: verificationMessage,
@@ -352,12 +373,11 @@ function resolveBanner({
       secondaryHref: '#cart-summary',
       secondaryLabel: 'View order summary',
       showSessionId: Boolean(sessionId),
-      borderClass: 'border-[#ff3b45]/35',
-    }
+    })
   }
 
-  return {
-    tone: 'blue' as const,
+  return productCheckoutBanner({
+    tone: 'blue',
     label: 'Verifying order',
     title: 'Verifying your Stripe order.',
     body: verificationMessage,
@@ -367,8 +387,7 @@ function resolveBanner({
     secondaryHref: '/products',
     secondaryLabel: 'Continue shopping',
     showSessionId: Boolean(sessionId),
-    borderClass: 'border-[#33d9ff]/35',
-  }
+  })
 }
 
 function wait(durationMs: number) {
