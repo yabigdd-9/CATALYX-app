@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Panel, SaveBanner, StatusPill } from '@/components/catalyx-ui'
+import { adminFetch } from '@/lib/admin-client'
 import { readLocalList, storageKeys } from '@/lib/persistence'
 import {
   buildCxMissionActivitySummary,
@@ -144,13 +145,10 @@ export default function RewardsExchangePanel({
     let active = true
     ;(async () => {
       if (snapshot.balanceCx > 0 || snapshot.storeCreditBalanceCents > 0) {
-        const migrateResponse = await fetch('/api/rewards/migrate', {
+        const migrateResponse = await adminFetch('/api/rewards/migrate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
-            email: user?.email,
-            tier: user?.plan,
             legacyBalanceCx: snapshot.balanceCx,
             legacyStoreCreditBalanceCents: snapshot.storeCreditBalanceCents,
           }),
@@ -176,14 +174,8 @@ export default function RewardsExchangePanel({
         }
       }
 
-      const syncResponse = await fetch('/api/rewards/sync', {
+      const syncResponse = await adminFetch('/api/rewards/sync', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          email: user?.email,
-          tier: user?.plan,
-        }),
       })
 
       if (!syncResponse.ok) return
@@ -224,14 +216,11 @@ export default function RewardsExchangePanel({
 
     if (reward.kind === 'store_credit' && user?.id) {
       try {
-        const response = await fetch('/api/rewards/redeem', {
+        const response = await adminFetch('/api/rewards/redeem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
-            email: user.email,
             rewardId,
-            plan: user.plan,
           }),
         })
         const payload = await response.json()
