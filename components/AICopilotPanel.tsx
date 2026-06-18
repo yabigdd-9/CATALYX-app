@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { CopilotResponsePayload } from '@/lib/ai-copilot'
+import { adminFetch } from '@/lib/admin-client'
 import { buildCopilotContext } from '@/lib/copilot-context'
 import { Panel, SaveBanner, StatusPill } from '@/components/catalyx-ui'
 
@@ -25,7 +26,7 @@ export default function AICopilotPanel() {
         environmentLogs: context.sourceSummary?.environmentLogs ?? 'none',
         journalEntries: context.sourceSummary?.journalEntries ?? 'none',
       })
-      const response = await fetch('/api/ai/copilot', {
+      const response = await adminFetch('/api/ai/copilot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(context),
