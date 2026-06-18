@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { importLegacyRewardSnapshot } from '@/lib/rewards-backend'
-import { planToMembershipTier } from '@/lib/rewards'
+import { mapRewardWallet, requireRewardUser } from '@/lib/rewards-auth'
 
 export async function POST(request: Request) {
+  const guard = await requireRewardUser(request)
+  if (guard.response || !guard.appUser || !guard.authUser) return guard.response
+
   let body: {
-    userId?: string
-    email?: string
-    tier?: string
     legacyBalanceCx?: number
     legacyStoreCreditBalanceCents?: number
   }
@@ -22,9 +22,9 @@ export async function POST(request: Request) {
 
   try {
     const result = await importLegacyRewardSnapshot({
-      userCandidate: body.userId,
-      email: body.email,
-      tier: planToMembershipTier(body.tier),
+      userCandidate: String(guard.appUser.id),
+      email: guard.authUser.email ?? guard.appUser.email ?? '',
+      tier: guard.tier,
       legacyBalanceCx,
       legacyStoreCreditBalanceCents,
     })
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       source: result.source,
       migrated: result.migrated,
       skippedReason: result.skippedReason ?? null,
-      wallet: result.wallet ?? null,
+      wallet: mapRewardWallet(result.wallet),
       appUserId: result.appUserId ?? '',
     })
   } catch (error) {
