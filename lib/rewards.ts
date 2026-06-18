@@ -701,8 +701,27 @@ function clampNotifications(values: CxNotification[]) {
   return values.slice(0, 18)
 }
 
+function secureRandomUnit() {
+  const values = new Uint32Array(1)
+  globalThis.crypto.getRandomValues(values)
+  return values[0] / 0x100000000
+}
+
+function secureRandomInt(maxExclusive: number) {
+  if (maxExclusive <= 0) return 0
+  const values = new Uint32Array(1)
+  const range = 0x100000000
+  const limit = range - (range % maxExclusive)
+
+  do {
+    globalThis.crypto.getRandomValues(values)
+  } while (values[0] >= limit)
+
+  return values[0] % maxExclusive
+}
+
 function randomReferralCode() {
-  return `REF-CX-${Math.floor(1000 + Math.random() * 9000)}`
+  return `REF-CX-${1000 + secureRandomInt(9000)}`
 }
 
 function stateStorageKey() {
@@ -885,7 +904,7 @@ function createLedgerEntry({
   metadata?: Record<string, string | number | boolean | null>
 }): CxLedgerEntry {
   return {
-    id: `${source}-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+    id: `${source}-${Date.now()}-${secureRandomInt(100000)}`,
     userId,
     eventType,
     source,
@@ -1334,7 +1353,7 @@ function weightedWheelSlice(tier: CxMembershipTier) {
         : slice.baseWeight * multiplier,
   }))
   const total = weighted.reduce((sum, slice) => sum + slice.adjustedWeight, 0)
-  let cursor = Math.random() * total
+  let cursor = secureRandomUnit() * total
 
   for (const slice of weighted) {
     cursor -= slice.adjustedWeight

@@ -7,7 +7,17 @@ function resolveSupabaseUrl(value?: string) {
   try {
     return new URL(trimmed).origin
   } catch {
-    return trimmed.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/g, '') || undefined
+    let normalized = trimmed
+    const lower = normalized.toLowerCase()
+    if (lower.endsWith('/rest/v1/')) {
+      normalized = normalized.slice(0, -'/rest/v1/'.length)
+    } else if (lower.endsWith('/rest/v1')) {
+      normalized = normalized.slice(0, -'/rest/v1'.length)
+    }
+    while (normalized.endsWith('/')) {
+      normalized = normalized.slice(0, -1)
+    }
+    return normalized || undefined
   }
 }
 

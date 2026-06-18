@@ -57,7 +57,7 @@ const res = await fetch('https://api.stripe.com/v1/prices?active=true&limit=100&
 })
 
 if (!res.ok) {
-  console.error('Stripe API error:', res.status, await res.text())
+  console.error('Stripe API error:', res.status)
   process.exit(1)
 }
 
