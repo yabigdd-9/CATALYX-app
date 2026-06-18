@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server'
 import { issueBackendStoreCreditReward } from '@/lib/rewards-backend'
+import { requireRewardUser } from '@/lib/rewards-auth'
 
 export async function POST(request: Request) {
-  let body: { userId?: string; email?: string; rewardId?: string; plan?: string }
+  const guard = await requireRewardUser(request)
+  if (guard.response || !guard.appUser || !guard.authUser) return guard.response
+
+  let body: { rewardId?: string }
   try {
     body = await request.json()
   } catch {
@@ -15,10 +19,10 @@ export async function POST(request: Request) {
 
   try {
     const result = await issueBackendStoreCreditReward({
-      userCandidate: body.userId,
-      email: body.email,
+      userCandidate: String(guard.appUser.id),
+      email: guard.authUser.email ?? guard.appUser.email ?? '',
       rewardId: body.rewardId,
-      plan: body.plan,
+      plan: guard.tier,
     })
 
     return NextResponse.json({
