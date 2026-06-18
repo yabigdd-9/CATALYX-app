@@ -27,7 +27,20 @@ export type CatalyxKit = {
   faqs: Array<{ question: string; answer: string }>
 }
 
-export const catalyxKits: CatalyxKit[] = [
+type CatalyxKitSource = Omit<CatalyxKit, 'href' | 'ctaLabel' | 'faqs'> & {
+  faqs: Array<[string, string]>
+}
+
+function expandKit(kit: CatalyxKitSource): CatalyxKit {
+  return {
+    ...kit,
+    href: `/kits/${kit.slug}`,
+    ctaLabel: `View ${kit.name} details`,
+    faqs: kit.faqs.map(([question, answer]) => ({ question, answer })),
+  }
+}
+
+const catalyxKitSources: CatalyxKitSource[] = [
   {
     slug: 'base-kit',
     name: 'Base Kit',
@@ -38,22 +51,11 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Base Kit when you want the shortest route from landing page to confident first order.',
     productIds: ['ax-pro', 'bx-pro'],
     collections: ['all', 'core-nutrients'],
-    href: '/kits/base-kit',
-    ctaLabel: 'View Base Kit details',
     note: 'Best first click for new growers.',
     faqs: [
-      {
-        question: 'What is included in Base Kit?',
-        answer: 'Base Kit includes A-X PRO and B-X PRO, the two-part feed foundation that anchors the Catalyx system.',
-      },
-      {
-        question: 'Who should start with Base Kit?',
-        answer: 'Most first-time visitors should start here because it keeps the system simple before adding support or finish products.',
-      },
-      {
-        question: 'What should I open after Base Kit?',
-        answer: 'Use the feed chart to match stage timing, then open the product guide if you want deeper bottle-by-bottle context.',
-      },
+      ['What is included in Base Kit?', 'Base Kit includes A-X PRO and B-X PRO, the two-part feed foundation that anchors the Catalyx system.'],
+      ['Who should start with Base Kit?', 'Most first-time visitors should start here because it keeps the system simple before adding support or finish products.'],
+      ['What should I open after Base Kit?', 'Use the feed chart to match stage timing, then open the product guide if you want deeper bottle-by-bottle context.'],
     ],
   },
   {
@@ -66,21 +68,10 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Core Kit when Base Kit feels too minimal but Complete Kit is still more system than you need.',
     productIds: ['ax-pro', 'bx-pro', 'root-x', 'micro-x'],
     collections: ['all', 'core-nutrients', 'additives', 'specialist'],
-    href: '/kits/core-kit',
-    ctaLabel: 'View Core Kit details',
     faqs: [
-      {
-        question: 'How is Core Kit different from Base Kit?',
-        answer: 'Core Kit keeps the A-X PRO and B-X PRO foundation, then adds ROOT-X and MICRO-X for cleaner establishment and trace support.',
-      },
-      {
-        question: 'Does Core Kit replace the base feed?',
-        answer: 'No. It extends the base feed with targeted support products rather than replacing the two-part foundation.',
-      },
-      {
-        question: 'When should I choose Core Kit?',
-        answer: 'Choose it when you want more early-cycle support and trace balance than Base Kit alone provides.',
-      },
+      ['How is Core Kit different from Base Kit?', 'Core Kit keeps the A-X PRO and B-X PRO foundation, then adds ROOT-X and MICRO-X for cleaner establishment and trace support.'],
+      ['Does Core Kit replace the base feed?', 'No. It extends the base feed with targeted support products rather than replacing the two-part foundation.'],
+      ['When should I choose Core Kit?', 'Choose it when you want more early-cycle support and trace balance than Base Kit alone provides.'],
     ],
   },
   {
@@ -93,21 +84,10 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Enhancement Kit when the run needs support control more than it needs extra base or finish products.',
     productIds: ['root-x', 'vital-x', 'micro-x'],
     collections: ['all', 'additives', 'specialist'],
-    href: '/kits/enhancement-kit',
-    ctaLabel: 'View Enhancement Kit details',
     faqs: [
-      {
-        question: 'Does Enhancement Kit include the base feed?',
-        answer: 'No. It is a support-layer kit, so it works best alongside an existing base-feed plan rather than as a standalone full feed.',
-      },
-      {
-        question: 'What problems is Enhancement Kit built for?',
-        answer: 'It is built for establishment, resilience, stress management, and trace support when the crop needs tighter intervention.',
-      },
-      {
-        question: 'Who should buy Enhancement Kit first?',
-        answer: 'It suits growers who already know their base-feed path and want more control around support windows.',
-      },
+      ['Does Enhancement Kit include the base feed?', 'No. It is a support-layer kit, so it works best alongside an existing base-feed plan rather than as a standalone full feed.'],
+      ['What problems is Enhancement Kit built for?', 'It is built for establishment, resilience, stress management, and trace support when the crop needs tighter intervention.'],
+      ['Who should buy Enhancement Kit first?', 'It suits growers who already know their base-feed path and want more control around support windows.'],
     ],
   },
   {
@@ -120,21 +100,10 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Final Stage Kit when you want a tighter end-of-cycle system rather than a broader all-stage bundle.',
     productIds: ['pk-x', 'ripen-x', 'flush-x'],
     collections: ['all', 'additives', 'specialist'],
-    href: '/kits/final-stage-kit',
-    ctaLabel: 'View Final Stage Kit details',
     faqs: [
-      {
-        question: 'What stage is Final Stage Kit for?',
-        answer: 'It is built for the closing stretch of the cycle: bloom support, ripening, and cleanup before harvest.',
-      },
-      {
-        question: 'Can I start the full run with Final Stage Kit?',
-        answer: 'No. This kit is a late-stage layer, not a full-system starting point.',
-      },
-      {
-        question: 'Why bundle these products together?',
-        answer: 'They solve the same buyer question: how to push bloom, finish cleanly, and avoid guesswork at the end of the run.',
-      },
+      ['What stage is Final Stage Kit for?', 'It is built for the closing stretch of the cycle: bloom support, ripening, and cleanup before harvest.'],
+      ['Can I start the full run with Final Stage Kit?', 'No. This kit is a late-stage layer, not a full-system starting point.'],
+      ['Why bundle these products together?', 'They solve the same buyer question: how to push bloom, finish cleanly, and avoid guesswork at the end of the run.'],
     ],
   },
   {
@@ -147,21 +116,10 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Performance Kit when you know the run needs more than the basics and you want flexibility without jumping to every product.',
     productIds: ['ax-pro', 'bx-pro', 'vital-x', 'pk-x', 'trace-x'],
     collections: ['all', 'core-nutrients', 'additives', 'specialist'],
-    href: '/kits/performance-kit',
-    ctaLabel: 'View Performance Kit details',
     faqs: [
-      {
-        question: 'How is Performance Kit different from Complete Kit?',
-        answer: 'Performance Kit is still selective. It adds targeted control to the base feed without including every Catalyx product.',
-      },
-      {
-        question: 'Who is Performance Kit best for?',
-        answer: 'Growers who already understand the feed path and want extra control around stress support, bloom push, and foliar correction.',
-      },
-      {
-        question: 'Is Performance Kit beginner-friendly?',
-        answer: 'It is usable, but it is better for growers who already understand when and why to introduce extra control points.',
-      },
+      ['How is Performance Kit different from Complete Kit?', 'Performance Kit is still selective. It adds targeted control to the base feed without including every Catalyx product.'],
+      ['Who is Performance Kit best for?', 'Growers who already understand the feed path and want extra control around stress support, bloom push, and foliar correction.'],
+      ['Is Performance Kit beginner-friendly?', 'It is usable, but it is better for growers who already understand when and why to introduce extra control points.'],
     ],
   },
   {
@@ -174,24 +132,15 @@ export const catalyxKits: CatalyxKit[] = [
     whenToChoose: 'Choose Complete Kit when you want the broadest Catalyx coverage and do not need the range simplified down further.',
     productIds: catalyxProducts.map((product) => product.id),
     collections: ['all', 'core-nutrients', 'additives', 'specialist'],
-    href: '/kits/complete-kit',
-    ctaLabel: 'View Complete Kit details',
     faqs: [
-      {
-        question: 'What does Complete Kit include?',
-        answer: 'Complete Kit includes the full nine-product Catalyx lineup: base feed, support products, bloom tools, foliar trace support, and cleanup products.',
-      },
-      {
-        question: 'Who should buy Complete Kit?',
-        answer: 'It suits buyers who already know they want the full system rather than a narrower entry path.',
-      },
-      {
-        question: 'Do I need Complete Kit to use Catalyx properly?',
-        answer: 'No. Base Kit remains the clearest entry point. Complete Kit is for buyers who want the whole system immediately.',
-      },
+      ['What does Complete Kit include?', 'Complete Kit includes the full nine-product Catalyx lineup: base feed, support products, bloom tools, foliar trace support, and cleanup products.'],
+      ['Who should buy Complete Kit?', 'It suits buyers who already know they want the full system rather than a narrower entry path.'],
+      ['Do I need Complete Kit to use Catalyx properly?', 'No. Base Kit remains the clearest entry point. Complete Kit is for buyers who want the whole system immediately.'],
     ],
   },
 ]
+
+export const catalyxKits: CatalyxKit[] = catalyxKitSources.map(expandKit)
 
 export function getKitBySlug(slug: KitSlug) {
   return catalyxKits.find((kit) => kit.slug === slug)
