@@ -14,6 +14,37 @@ Marketing-content workflows for Catalyx Labs (precision cultivation / plant nutr
 Read `reference/brand-voice.md` first so everything stays on-brand and on the right side of
 the legal note. Use the files in `templates/` as the output shape.
 
+## 0. Quick Run — the reel factory (mostly auto)
+
+Trigger: "run the reel factory", "make a reel from <folder>", "auto reel".
+Run the whole pipeline end-to-end **without stopping at each step**. Pause ONLY at a safe
+gate (see below).
+
+1. **Locate assets.** Use the folder path the user gave; else ask once, or pull from Google
+   Drive (`mcp__Google_Drive__*` via ToolSearch). List what was found.
+2. **Auto-draft the cut.** Infer the angle from the user's one-liner + filenames; fill
+   `templates/reel-script.md` yourself (don't make the user fill blanks). Pick a format that
+   fits the assets (before/after, mistake-fix, explainer, spotlight).
+3. **Assemble & render.** Build a 9:16 sequence, add the captions/on-screen text, render to a
+   finished file (tools in section 3). Crop/normalize media as needed.
+4. **Present** the finished reel with SendUserFile + the caption/hashtags.
+5. **End choice — always ask:** "(1) file only, or (2) publish/schedule?"
+   - (2) needs a connected Instagram/TikTok integration. If none is available, fall back to
+     file + ready-to-paste caption/hashtags and say so.
+
+**Safe gates (the only times you stop):**
+- Before **overwriting** an existing output file (offer a new name instead).
+- Before **deleting** any source asset.
+- Before any **external publish/export** — that sends content out.
+
+Everything else runs without asking. For a full week at once, see "Batch week" below.
+
+## Batch week
+
+Trigger: "make a content week". In one pass: fill `templates/content-calendar.md` for the
+week, then generate a `reel-script.md` draft for each planned post. Present the calendar +
+all drafts together.
+
 ## 1. Reel ideation (ideas, hooks, scripts)
 
 When the user wants ideas or a script:

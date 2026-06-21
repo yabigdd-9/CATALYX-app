@@ -15,6 +15,14 @@ Dev and file-management workflows for the Catalyx Labs project. Pick the section
 matches what the user asked for. **Always look before you overwrite or delete** — show
 the user what will change and get a yes before destructive steps.
 
+## Auto mode (mostly auto, safe gates)
+
+Triggers: "auto", "just do it", "run it end-to-end". Run the chosen workflow start to finish
+without stopping at each step — diff → reconcile → `npm run typecheck && npm run build` →
+commit/push (only if the user asked to commit/push). Still stop at the **safe gates**: before
+overwriting files, before deleting anything, and never copy `.env*`/secrets between repos.
+When not in auto mode, walk the steps and confirm as written below.
+
 ## 1. Download files
 
 1. Confirm the destination folder. If it doesn't exist, create it (`mkdir -p`).

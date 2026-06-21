@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(diff:*)",
+      "Bash(rsync:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "mcp__Adobe_for_creativity__*",
+      "mcp__Canva__*",
+      "mcp__Google_Drive__*"
+    ]
+  }
+}
