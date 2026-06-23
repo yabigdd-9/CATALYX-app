@@ -1,5 +1,5 @@
+import { products } from '@/lib/catalyx'
 import type { ProductKey } from '@/lib/catalyx'
-import { SKU_DATA } from '@/lib/sku-data'
 
 const productKeys = ['ax-pro', 'bx-pro', 'micro-x', 'root-x', 'vital-x', 'pk-x', 'ripen-x', 'trace-x', 'flush-x'] as const
 
@@ -31,7 +31,7 @@ function isProductKey(productId: string): productId is ProductKey {
 export default function ProductVisual({ productId, productName, className = '' }: ProductVisualProps) {
   const key = isProductKey(productId) ? productId : null
   const image = key ? renderImages[key] : null
-  const accent = key ? SKU_DATA[key].accent : '#7cff00'
+  const accent = key ? products.find((product) => product.id === key)?.accent ?? '#7cff00' : '#7cff00'
 
   return (
     <div
