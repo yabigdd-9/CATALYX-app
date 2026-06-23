@@ -49,3 +49,6 @@ output
 .windsurf/
 .zencoder/
 skills/
+
+# Generated skill bundles (build artifacts)
+catalyx-skills*.tar.gz
