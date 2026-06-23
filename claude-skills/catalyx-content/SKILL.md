@@ -27,6 +27,11 @@ gate (see below).
    fits the assets (before/after, mistake-fix, explainer, spotlight).
 3. **Assemble & render.** Build a 9:16 sequence, add the captions/on-screen text, render to a
    finished file (tools in section 3). Crop/normalize media as needed.
+   - **Product imagery rule:** any bottle on screen MUST be an official render (see
+     `reference/brand-voice.md`). Prefer the local render file via Adobe (`asset_add_file` →
+     `image_remove_background` if needed); fall back to Canva (`upload-asset-from-url` +
+     `asset_ids`) when the render is at a public URL. NEVER generate a stand-in bottle — if no
+     official render exists for that product, show stage/plant visuals instead.
 4. **Present** the finished reel with SendUserFile + the caption/hashtags.
 5. **End choice — always ask:** "(1) file only, or (2) publish/schedule?"
    - (2) needs a connected Instagram/TikTok integration. If none is available, fall back to
@@ -87,6 +92,10 @@ Turn the user's AI-generated images/videos into a finished vertical reel (9:16).
      `export-design`.
    - `ToolSearch "image edit background"` → Adobe `image_*` (crop to 9:16, remove bg, etc.).
    Build a 9:16 sequence, add the captions/on-screen text from the script, render.
+   - **Official renders only:** when a shot shows a product, use the official render
+     (`reference/brand-voice.md` → "Product imagery"). Adobe path: `asset_add_file` the render
+     → `image_remove_background` if it has a background → composite. Canva path:
+     `upload-asset-from-url` the public render link → embed via `asset_ids`. Never fabricate a bottle.
 4. **Deliver.** Save/export the finished reel, report the path, and surface it with
    SendUserFile. **Confirm before any external publish/export** — exporting sends content out.
 5. **Organize the output.** Offer to file the export with the `catalyx-ops` move workflow.
